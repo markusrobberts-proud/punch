@@ -33,7 +33,7 @@ export async function generateEmailCopy(args: {
 
   const formatGuidance =
     args.email.format === "text"
-      ? `This is a TEXT email — write it as a letter from ${args.email.sender_identity ?? "the founder"}. No design treatment. Plain, personal, signed off.`
+      ? `This is a TEXT email. Write it as a letter from ${args.email.sender_identity ?? "the founder"}. No design treatment. Plain, personal, signed off.`
       : args.email.format === "sms"
         ? "This is an SMS send. Keep sms_body under 160 chars. body fields can be empty."
         : "This is a DESIGNED email. Body copy should pair well with imagery."

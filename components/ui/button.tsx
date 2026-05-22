@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline: "bg-white text-[#1D1D1F] border border-[#D2D2D7] hover:bg-[#F5F5F7]",
         ghost: "text-[#1D1D1F] hover:bg-[#F5F5F7]",
         danger: "bg-white text-[#FF3B30] border border-[#FFD5D1] hover:bg-[#FFF5F4]",
-        // shadcn aliases — keep old call sites working
+        // shadcn aliases so older call sites keep working
         default: "bg-[#1D1D1F] text-white hover:bg-black btn-primary-shadow disabled:bg-[#C7C7CC] disabled:text-white",
         destructive: "bg-white text-[#FF3B30] border border-[#FFD5D1] hover:bg-[#FFF5F4]",
         link: "text-[#007AFF] hover:underline underline-offset-4 p-0",

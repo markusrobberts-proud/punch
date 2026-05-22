@@ -53,7 +53,7 @@ export function EmailRow({
               <span>·</span>
               <FormatPill format={email.format} />
               <span>·</span>
-              <span className="truncate">{email.target_segment ?? "—"}</span>
+              <span className="truncate">{email.target_segment ?? "–"}</span>
             </div>
             <div className="text-sm font-medium mt-1 truncate">
               {email.subject_line ?? email.theme ?? "(no subject yet)"}
@@ -79,7 +79,7 @@ export function EmailRow({
                 <Field label="Preview" value={email.preview_text} />
                 <Field label="Headline" value={email.body_headline} />
                 <Field label="Body" value={email.body_copy} multiline />
-                <Field label="CTA" value={`${email.cta_text ?? ""}${email.cta_url ? ` — ${email.cta_url}` : ""}`} />
+                <Field label="CTA" value={`${email.cta_text ?? ""}${email.cta_url ? ` · ${email.cta_url}` : ""}`} />
                 {email.sms_body && <Field label="SMS body" value={email.sms_body} />}
               </div>
             ) : (
@@ -199,7 +199,7 @@ function Field({ label, value, multiline }: { label: string; value: string | nul
     <div>
       <div className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{label}</div>
       <p className={`text-sm ${multiline ? "whitespace-pre-wrap" : ""}`}>
-        {value || <span className="italic text-muted-foreground">—</span>}
+        {value || <span className="italic text-muted-foreground">–</span>}
       </p>
     </div>
   )

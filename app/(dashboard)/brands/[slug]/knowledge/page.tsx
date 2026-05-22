@@ -67,8 +67,8 @@ export default async function BrandKnowledgePage({
             <div>
               <div className="text-sm font-medium">{inboxEmail}</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Forward customer threads, meeting notes, and strategy emails to this address — they land here automatically.
-                <span className="ml-1 italic">(Phase 2B — ingestion wires up soon.)</span>
+                Forward customer threads, meeting notes, and strategy emails to this address. They land here automatically.
+                <span className="ml-1 italic">(Phase 2B: ingestion wires up soon.)</span>
               </div>
             </div>
           </CardContent>

@@ -65,7 +65,7 @@ export default async function AuditLogPage() {
                 <CardContent className="py-3 flex items-center justify-between gap-4 text-sm">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium">{user?.display_name || user?.email || "—"}</span>
+                      <span className="font-medium">{user?.display_name || user?.email || "–"}</span>
                       <span className="text-muted-foreground">·</span>
                       <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{row.action}</code>
                       <span className="text-muted-foreground">on</span>

@@ -263,7 +263,7 @@ export async function generateBriefForEmail(emailId: string) {
     } else if (e.format === "sms") {
       await supabase
         .from("campaign_emails")
-        .update({ design_brief: "SMS — no design brief required.", brief_status: "done" })
+        .update({ design_brief: "SMS. No design brief required.", brief_status: "done" })
         .eq("id", emailId)
     } else {
       const brief = await generateDesignedBrief({

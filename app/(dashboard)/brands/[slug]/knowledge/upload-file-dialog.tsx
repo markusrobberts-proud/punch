@@ -93,7 +93,7 @@ export function UploadFileDialog({ brandId, brandSlug }: { brandId: string; bran
               id="extractedText"
               name="extractedText"
               rows={5}
-              placeholder="Paste the readable text content if you have it. Claude reads this — without it, the file is stored but won't be in the AI context."
+              placeholder="Paste the readable text content if you have it. Claude reads this. Without it, the file is stored but won't be in the AI context."
             />
           </div>
 

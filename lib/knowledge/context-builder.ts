@@ -69,7 +69,7 @@ export async function buildBrandContext(brandId: string): Promise<GenerationCont
 
   const recentCampaigns = (recent as Array<{ theme: string | null; email_type: string | null; format: string | null; subject_line: string | null; body_headline: string | null; scheduled_date: string | null }> | null ?? [])
     .map((c) =>
-      `- ${c.scheduled_date ?? "?"} · ${c.format ?? "?"} · ${c.theme ?? "—"} — "${c.subject_line ?? ""}" / ${c.body_headline ?? ""}`,
+      `- ${c.scheduled_date ?? "?"} · ${c.format ?? "?"} · ${c.theme ?? "–"} · "${c.subject_line ?? ""}" / ${c.body_headline ?? ""}`,
     )
     .join("\n")
 
@@ -92,7 +92,7 @@ ${ctx.brandKnowledge || "(none yet)"}
 ## Recent campaigns
 ${ctx.recentCampaigns || "(none yet)"}`
 
-  const strategyBlock = `# Proud Strategy — how we think about email at Proud
+  const strategyBlock = `# Proud Strategy: how we think about email at Proud
 ${ctx.proudStrategy || "(strategy doc empty)"}`
 
   const first = ctx.brand.prefer_brand_over_strategy ? brandBlock : strategyBlock

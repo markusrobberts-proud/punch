@@ -37,7 +37,7 @@ export default async function StrategyPage({
   const sections = (data ?? []) as StrategySection[]
   const active = sections.find((s) => s.section_key === activeKey) ?? sections[0]
 
-  // Recent contributors — fetch users referenced in updated_by_user_id
+  // Recent contributors: fetch users referenced in updated_by_user_id
   const userIds = Array.from(new Set(sections.map((s) => s.updated_by_user_id).filter(Boolean))) as string[]
   const { data: contribs } = userIds.length > 0
     ? await supabase.from("users").select("id,display_name,email").in("id", userIds)

@@ -3,7 +3,7 @@
  * Fetches the homepage + a few top-level links from the same origin,
  * strips HTML to readable text, and returns an array of pages.
  *
- * Intentionally minimal — no external service dependency. For richer
+ * Intentionally minimal: no external service dependency. For richer
  * extraction, swap in Firecrawl or a headless browser later.
  */
 

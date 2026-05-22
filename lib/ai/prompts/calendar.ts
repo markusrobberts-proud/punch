@@ -7,7 +7,7 @@ import { MONTHS } from "@/lib/campaigns"
 const CalendarSchema = z.object({
   strategic_rationale: z
     .string()
-    .describe("Why this calendar shape — cadence, themes, what's escalating across the month."),
+    .describe("Why this calendar shape: cadence, themes, what's escalating across the month."),
   series: z
     .array(
       z.object({
@@ -53,9 +53,9 @@ Cadence targets:
 - Text emails: ${args.targets.text ?? "use your judgement"}
 - SMS sends: ${args.targets.sms ?? "0"}
 
-Team brief: ${args.teamBrief?.trim() || "(none provided — work from strategy + knowledge)"}
+Team brief: ${args.teamBrief?.trim() || "(none provided; work from strategy + knowledge)"}
 
-Output an ordered list of emails with theme, type, format, target segment, scheduled date, and rationale. Group multi-touch moments (launches, sales, events) into series with consistent tone and escalating urgency. If you need to go over or under the cadence targets to tell a better story, do — and explain why in strategic_rationale.`
+Output an ordered list of emails with theme, type, format, target segment, scheduled date, and rationale. Group multi-touch moments (launches, sales, events) into series with consistent tone and escalating urgency. If you need to go over or under the cadence targets to tell a better story, do, and explain why in strategic_rationale.`
 
   const { object } = await generateObject({
     model: pickModel("reasoning"),

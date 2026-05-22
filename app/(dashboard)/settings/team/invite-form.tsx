@@ -45,14 +45,14 @@ export function InviteUserForm() {
 
       {result && !result.ok && <p className="text-sm text-destructive">{result.error}</p>}
       {result && result.ok && result.via === "service" && (
-        <p className="text-sm text-emerald-700">Invitation sent — magic link delivered to their inbox.</p>
+        <p className="text-sm text-emerald-700">Invitation sent. Magic link delivered to their inbox.</p>
       )}
       {result && result.ok && result.via === "magic_link_url" && (
         <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md p-3">
           No service role key configured yet, so we couldn't send the invite email automatically. Ask them to sign in at
           {" "}
           <a href={result.url} className="underline" target="_blank" rel="noreferrer">{result.url}</a>
-          {" "}— they'll request their own magic link, then you can promote them on this page.
+          . They'll request their own magic link, then you can promote them on this page.
         </div>
       )}
     </form>

@@ -25,12 +25,12 @@ export async function exportEmailToAsana(emailId: string) {
     .eq("id", email.brand_id)
     .single()
 
-  const name = `${brand?.name ?? "Brand"} — ${email.scheduled_date ?? "TBD"} — ${email.subject_line ?? email.theme ?? "Email"}`
+  const name = `${brand?.name ?? "Brand"} · ${email.scheduled_date ?? "TBD"} · ${email.subject_line ?? email.theme ?? "Email"}`
 
   const notes = [
     `Format: ${email.format}`,
     `Scheduled: ${email.scheduled_date ?? "TBD"}`,
-    `Theme: ${email.theme ?? "—"}`,
+    `Theme: ${email.theme ?? "–"}`,
     "",
     `Subject: ${email.subject_line ?? ""}`,
     `Headline: ${email.body_headline ?? ""}`,
@@ -51,7 +51,7 @@ export async function exportEmailToAsana(emailId: string) {
         ].join("\n")
       : email.format === "text"
         ? [`Sender: ${email.sender_identity ?? ""}`, "", "Brief:", email.design_brief ?? ""].join("\n")
-        : `SMS — ${email.design_brief ?? ""}`,
+        : `SMS · ${email.design_brief ?? ""}`,
   ].join("\n")
 
   const task = await createAsanaTask({ name, notes, workspaceId })

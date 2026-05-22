@@ -73,7 +73,7 @@ export default async function BrandDashboard({ params }: { params: Promise<{ slu
       <PageHeader
         eyebrow={brand.industry ? `${brand.industry} · Brand workspace` : "Brand workspace"}
         title={brand.name}
-        description={brand.tone_of_voice ?? "Plan, draft, brief and approve email — all in one place."}
+        description={brand.tone_of_voice ?? "Plan, draft, brief and approve email, all in one place."}
         actions={
           <div className="flex items-center gap-2">
             <Badge variant={brand.scrape_status === "done" ? "success" : brand.scrape_status === "error" ? "destructive" : "neutral"}>
@@ -155,7 +155,7 @@ export default async function BrandDashboard({ params }: { params: Promise<{ slu
             </CardHeader>
             <CardContent>
               <p className="text-[13px] whitespace-pre-wrap leading-relaxed">
-                {brand.tone_of_voice || <span className="italic text-[#86868B]">Not set yet — add it in brand settings.</span>}
+                {brand.tone_of_voice || <span className="italic text-[#86868B]">Not set yet. Add it in brand settings.</span>}
               </p>
             </CardContent>
           </Card>

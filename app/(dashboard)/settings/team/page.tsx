@@ -26,7 +26,7 @@ export default async function TeamPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Invite teammates and assign roles. New signups land as `pending` — promote them here.
+          Invite teammates and assign roles. New signups land as `pending`. Promote them here.
         </p>
       </div>
 

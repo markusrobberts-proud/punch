@@ -81,7 +81,7 @@ export async function createBrandAction(
   })
 
   if (parsed.data.website_url) {
-    // Fire-and-forget — don't block the redirect on the scrape.
+    // Fire-and-forget so the redirect isn't blocked on the scrape.
     runWebsiteScrape(data.id).catch((err) => console.error("[scrape] background failure:", err))
   }
 

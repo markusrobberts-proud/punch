@@ -1,4 +1,4 @@
--- Knowledge bank file uploads — Supabase Storage bucket + RLS
+-- Knowledge bank file uploads: Supabase Storage bucket + RLS
 
 insert into storage.buckets (id, name, public)
 values ('knowledge-files', 'knowledge-files', false)

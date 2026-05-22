@@ -13,7 +13,7 @@ export default function LoginPage() {
           </div>
           <h1 className="text-[28px] font-semibold tracking-display mt-1">Email OS</h1>
           <p className="text-[13px] text-[#6E6E73] mt-3 max-w-sm mx-auto leading-relaxed">
-            Sign in with your team email — we'll send you a magic link.
+            Sign in with your team email. We'll send you a magic link.
           </p>
         </div>
         <div className="glass-strong rounded-2xl p-7">

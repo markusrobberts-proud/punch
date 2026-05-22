@@ -22,7 +22,7 @@ export function StrategySectionEditor({
         {body ? (
           <p className="text-sm whitespace-pre-wrap">{body}</p>
         ) : (
-          <p className="text-sm italic text-muted-foreground">Empty — click edit to write the first version.</p>
+          <p className="text-sm italic text-muted-foreground">Empty. Click edit to write the first version.</p>
         )}
         <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
           Edit

@@ -1,4 +1,4 @@
--- Proud Email OS — initial schema
+-- Proud Email OS: initial schema
 -- Tables, enums, RLS policies, and a JWT role-claim hook.
 -- Apply via Supabase SQL editor or `supabase db push` once the project is linked.
 

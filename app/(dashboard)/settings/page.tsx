@@ -22,7 +22,7 @@ export default async function SettingsPage() {
         <CardContent className="text-sm">
           <div className="flex justify-between py-1">
             <span className="text-muted-foreground">Display name</span>
-            <span>{user.displayName ?? "—"}</span>
+            <span>{user.displayName ?? "–"}</span>
           </div>
           <div className="flex justify-between py-1">
             <span className="text-muted-foreground">Role</span>

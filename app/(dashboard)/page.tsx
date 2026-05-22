@@ -67,7 +67,7 @@ export default async function BrandsPage() {
             <CardTitle>No brands yet</CardTitle>
             <CardDescription>
               {canPlan
-                ? "Add your first brand to get started — Walnut, Genuins, Proud Coffee Co."
+                ? "Add your first brand to get started: Walnut, Genuins, Proud Coffee Co."
                 : "An admin or strategist needs to add a brand before you can do anything here."}
             </CardDescription>
           </CardHeader>
@@ -83,7 +83,7 @@ export default async function BrandsPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle>{brand.name}</CardTitle>
-                        <CardDescription>{brand.industry ?? "—"}</CardDescription>
+                        <CardDescription>{brand.industry ?? "–"}</CardDescription>
                       </div>
                       <BrandSquare color={brand.primary_color} name={brand.name} />
                     </div>

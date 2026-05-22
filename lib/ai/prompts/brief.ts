@@ -11,7 +11,7 @@ const DesignedBriefSchema = z.object({
 })
 
 const TextBriefSchema = z.object({
-  sender_identity: z.string().describe("Who signs the email — name + role."),
+  sender_identity: z.string().describe("Who signs the email (name + role)."),
   design_brief: z.string().describe("Formatting + tone notes for the writer/sender."),
 })
 
@@ -32,7 +32,7 @@ export async function generateDesignedBrief(args: {
   const ctx = await buildBrandContext(args.brandId)
   const intent = `Write a design brief for this approved email:
 
-Theme: ${args.email.theme ?? "—"}
+Theme: ${args.email.theme ?? "–"}
 Subject: ${args.email.subject_line ?? ""}
 Headline: ${args.email.body_headline ?? ""}
 Body: ${args.email.body_copy ?? ""}
@@ -63,12 +63,12 @@ export async function generateTextBrief(args: {
   const ctx = await buildBrandContext(args.brandId)
   const intent = `Write a brief for this text email:
 
-Theme: ${args.email.theme ?? "—"}
+Theme: ${args.email.theme ?? "–"}
 Subject: ${args.email.subject_line ?? ""}
 Body: ${args.email.body_copy ?? ""}
 Audience: ${args.email.target_segment ?? "all subscribers"}
 
-Decide who signs it (sender_identity — name + role at the brand) and provide formatting + tone notes. No visual design.`
+Decide who signs it (sender_identity: name + role at the brand) and provide formatting + tone notes. No visual design.`
 
   const { object } = await generateObject({
     model: pickModel("drafting"),
