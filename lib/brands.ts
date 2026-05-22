@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { createSupabaseServerClient } from "./supabase/server"
 
 export type Brand = {
@@ -11,7 +12,7 @@ export type Brand = {
   status: "active" | "inactive"
 }
 
-export async function listAccessibleBrands(): Promise<Brand[]> {
+export const listAccessibleBrands = cache(async (): Promise<Brand[]> => {
   const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase
     .from("brands")
@@ -20,9 +21,9 @@ export async function listAccessibleBrands(): Promise<Brand[]> {
     .order("name", { ascending: true })
   if (error) return []
   return (data ?? []) as Brand[]
-}
+})
 
-export async function getBrandBySlug(slug: string) {
+export const getBrandBySlug = cache(async (slug: string) => {
   const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase
     .from("brands")
@@ -31,7 +32,7 @@ export async function getBrandBySlug(slug: string) {
     .maybeSingle()
   if (error) return null
   return data
-}
+})
 
 export function toSlug(name: string) {
   return name

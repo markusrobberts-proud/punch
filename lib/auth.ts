@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "./supabase/server"
 
@@ -8,7 +9,11 @@ export type AppUser = {
   role: "admin" | "strategist" | "designer" | "viewer" | "pending"
 }
 
-export async function getUser(): Promise<AppUser | null> {
+/**
+ * `cache()` memoises the result per request, so calling `getUser()` from
+ * a layout and a page does just one DB round trip.
+ */
+export const getUser = cache(async (): Promise<AppUser | null> => {
   const supabase = await createSupabaseServerClient()
   const { data: authData } = await supabase.auth.getUser()
   if (!authData?.user) return null
@@ -34,7 +39,7 @@ export async function getUser(): Promise<AppUser | null> {
     displayName: (profile.display_name as string | null) ?? null,
     role: (profile.role as AppUser["role"]) ?? "pending",
   }
-}
+})
 
 export async function requireUser(): Promise<AppUser> {
   const user = await getUser()
