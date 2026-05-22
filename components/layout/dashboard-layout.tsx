@@ -1,20 +1,37 @@
 import { Sidebar } from "./sidebar"
-import { SignOutButton } from "./sign-out-button"
+import { initialsFromName } from "@/components/ui/avatar"
 import type { AppUser } from "@/lib/auth"
 
-export function DashboardLayout({ user, children }: { user: AppUser; children: React.ReactNode }) {
+type Brand = {
+  id: string
+  slug: string
+  name: string
+  primary_color: string | null
+}
+
+export function DashboardLayout({
+  user,
+  brands,
+  activeBrandSlug,
+  claudeStatus,
+  children,
+}: {
+  user: AppUser
+  brands: Brand[]
+  activeBrandSlug: string | null
+  claudeStatus: { connected: boolean; docs: number; brandName: string | null }
+  children: React.ReactNode
+}) {
   return (
-    <div className="min-h-screen flex bg-gradient-to-b from-white via-neutral-50 to-neutral-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 border-b border-border/60 bg-white/60 backdrop-blur-md flex items-center justify-end px-8 gap-4">
-          <div className="text-right">
-            <div className="text-sm font-medium">{user.displayName ?? user.email}</div>
-            <div className="text-xs text-muted-foreground capitalize">{user.role}</div>
-          </div>
-          <SignOutButton />
-        </header>
-        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
+    <div className="min-h-screen flex">
+      <Sidebar
+        brands={brands}
+        activeBrandSlug={activeBrandSlug}
+        userInitials={initialsFromName(user.displayName ?? user.email)}
+        claudeStatus={claudeStatus}
+      />
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>
   )
