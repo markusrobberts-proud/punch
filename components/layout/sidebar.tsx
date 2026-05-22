@@ -2,12 +2,28 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import type { LucideIcon } from "lucide-react"
+import {
+  Calendar,
+  LayoutDashboard,
+  BookOpen,
+  Sparkles,
+  Mail,
+  BarChart3,
+  Settings,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type NavItem = { href: string; label: string; icon: LucideIcon }
+const NAV = [
+  { href: "/", label: "Brands", icon: LayoutDashboard },
+  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/knowledge", label: "Knowledge Bank", icon: BookOpen },
+  { href: "/strategy", label: "Proud Strategy", icon: Sparkles },
+  { href: "/klaviyo", label: "Klaviyo", icon: Mail },
+  { href: "/eom", label: "EOM Reports", icon: BarChart3 },
+  { href: "/settings", label: "Settings", icon: Settings },
+]
 
-export function Sidebar({ nav }: { nav: NavItem[] }) {
+export function Sidebar() {
   const pathname = usePathname()
 
   return (
@@ -22,7 +38,7 @@ export function Sidebar({ nav }: { nav: NavItem[] }) {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {nav.map(({ href, label, icon: Icon }) => {
+        {NAV.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href)
           return (
             <Link
