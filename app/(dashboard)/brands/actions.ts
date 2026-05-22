@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/rbac"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { recordAudit } from "@/lib/audit"
 import { toSlug } from "@/lib/brands"
+import { runWebsiteScrape } from "./[slug]/scrape-actions"
 
 const BrandSchema = z.object({
   name: z.string().min(2).max(120),
@@ -78,6 +79,11 @@ export async function createBrandAction(
     action: "create",
     meta: { name: parsed.data.name },
   })
+
+  if (parsed.data.website_url) {
+    // Fire-and-forget — don't block the redirect on the scrape.
+    runWebsiteScrape(data.id).catch((err) => console.error("[scrape] background failure:", err))
+  }
 
   revalidatePath("/")
   redirect(`/brands/${data.slug}`)

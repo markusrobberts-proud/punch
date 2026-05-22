@@ -49,6 +49,9 @@ export type CampaignEmail = {
   copy_status: StageStatus
   brief_status: StageStatus
   regeneration_feedback: unknown
+  asana_task_id: string | null
+  asana_task_url: string | null
+  asana_exported_at: string | null
 }
 
 export async function listPlansForBrand(brandId: string): Promise<CampaignPlan[]> {

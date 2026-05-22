@@ -1,16 +1,19 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { requireApprovedUser } from "@/lib/auth"
+import { canEditStrategy } from "@/lib/rbac"
 import { getBrandBySlug } from "@/lib/brands"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ScrapeButton } from "./scrape-button"
 
 export default async function BrandDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  await requireApprovedUser()
+  const user = await requireApprovedUser()
   const { slug } = await params
   const brand = await getBrandBySlug(slug)
   if (!brand) notFound()
+  const canEdit = canEditStrategy(user.role)
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -34,6 +37,9 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ sl
           <Badge variant={brand.scrape_status === "done" ? "success" : "secondary"} className="capitalize">
             Scrape: {brand.scrape_status}
           </Badge>
+          {canEdit && brand.website_url && (
+            <ScrapeButton brandId={brand.id} status={brand.scrape_status} />
+          )}
           <Button variant="outline" size="sm" asChild>
             <Link href={`/brands/${brand.slug}/calendar`}>Open calendar</Link>
           </Button>

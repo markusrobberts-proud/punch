@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { generateCopyForEmail, generateBriefForEmail } from "../actions"
+import { exportEmailToAsana } from "../asana-actions"
 
 export function EmailRow({
   email,
@@ -124,6 +125,26 @@ export function EmailRow({
                   >
                     {briefDone ? "Regenerate brief" : "Generate brief"}
                   </Button>
+                  {briefDone && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={pending}
+                      onClick={() => act(() => exportEmailToAsana(email.id))}
+                    >
+                      {email.asana_task_url ? "Re-export to Asana" : "Export to Asana"}
+                    </Button>
+                  )}
+                  {email.asana_task_url && (
+                    <a
+                      href={email.asana_task_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-muted-foreground hover:text-foreground underline"
+                    >
+                      View Asana task →
+                    </a>
+                  )}
                 </div>
                 {copyDone && (
                   <Textarea
