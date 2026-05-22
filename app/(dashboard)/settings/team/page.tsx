@@ -11,11 +11,12 @@ type UserRow = {
   id: string
   email: string
   display_name: string | null
-  role: "admin" | "strategist" | "designer" | "viewer" | "pending"
+  role: "super_admin" | "admin" | "strategist" | "designer" | "viewer" | "pending"
   created_at: string
 }
 
 const ROLE_COLOURS: Record<string, string> = {
+  super_admin: "#0A4B91",
   admin: "#1D1D1F",
   strategist: "#2D4F6B",
   designer: "#8B5A2B",
@@ -82,7 +83,12 @@ export default async function TeamPage() {
                   <div className="text-[12px] text-[#86868B] truncate">{u.email}</div>
                 </div>
               </div>
-              <RoleSelect userId={u.id} currentRole={u.role} isSelf={u.id === admin.id} />
+              <RoleSelect
+                userId={u.id}
+                currentRole={u.role}
+                isSelf={u.id === admin.id}
+                canAssignSuperAdmin={admin.actualRole === "super_admin"}
+              />
             </div>
           ))}
         </CardContent>

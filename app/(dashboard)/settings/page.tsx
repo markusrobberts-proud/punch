@@ -1,14 +1,16 @@
 import Link from "next/link"
 import { ArrowRight, Users, ListChecks, KeyRound } from "lucide-react"
 import { requireApprovedUser } from "@/lib/auth"
-import { canManageUsers } from "@/lib/rbac"
+import { canManageUsers, canViewAs } from "@/lib/rbac"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader, PageShell } from "@/components/layout/page-header"
+import { ViewAsCard } from "./view-as-card"
 
 export default async function SettingsPage() {
   const user = await requireApprovedUser()
-  const isAdmin = canManageUsers(user.role)
+  const isAdmin = canManageUsers(user.actualRole)
+  const isSuper = canViewAs(user.actualRole)
 
   return (
     <PageShell>
@@ -18,6 +20,16 @@ export default async function SettingsPage() {
         description="Your account, your team, and what the platform connects to."
       />
 
+      {isSuper && (
+        <div className="mb-8">
+          <ViewAsCard
+            currentViewAs={
+              (user.viewingAs as "admin" | "strategist" | "designer" | "viewer" | null) ?? null
+            }
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card>
           <CardHeader>
@@ -26,7 +38,15 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="text-[13px]">
             <Row label="Display name" value={user.displayName ?? "–"} />
-            <Row label="Role" value={<span className="capitalize">{user.role}</span>} />
+            <Row
+              label="Role"
+              value={
+                <span className="inline-flex items-center gap-2">
+                  <span className="capitalize">{user.actualRole.replace(/_/g, " ")}</span>
+                  {user.viewingAs && <Badge variant="info">viewing as {user.viewingAs}</Badge>}
+                </span>
+              }
+            />
           </CardContent>
         </Card>
 
@@ -45,7 +65,9 @@ export default async function SettingsPage() {
 
       {isAdmin && (
         <>
-          <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-3 mt-10">Admin</div>
+          <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-3 mt-10">
+            Admin
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <SettingsTile
               href="/settings/team"
@@ -76,7 +98,7 @@ export default async function SettingsPage() {
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between py-1.5 border-b last:border-0 border-[#E5E5EA]">
+    <div className="flex justify-between items-center py-1.5 border-b last:border-0 border-[#E5E5EA]">
       <span className="text-[#86868B]">{label}</span>
       <span>{value}</span>
     </div>

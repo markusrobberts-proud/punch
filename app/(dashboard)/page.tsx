@@ -70,6 +70,7 @@ export default async function HomePage() {
 
 function roleTitle(role: AppUser["role"]): string {
   switch (role) {
+    case "super_admin":
     case "admin":
       return "Command centre"
     case "strategist":
@@ -85,6 +86,7 @@ function roleTitle(role: AppUser["role"]): string {
 
 function roleSubtitle(role: AppUser["role"]): string {
   switch (role) {
+    case "super_admin":
     case "admin":
       return "Activity, pending reviews, team and system status across every brand."
     case "strategist":
@@ -113,7 +115,7 @@ function roleDashboard({
   userMap: Map<string, { display_name: string | null; email: string }>
   aiKeyConfigured: boolean
 }) {
-  if (user.role === "admin") {
+  if (user.role === "admin" || user.role === "super_admin") {
     return <AdminDashboard user={user} data={data} brands={brands} brandMap={brandMap} userMap={userMap} aiKeyConfigured={aiKeyConfigured} />
   }
   if (user.role === "strategist") {

@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation"
-import { requireApprovedUser, type AppUser } from "./auth"
+import { requireApprovedUser, type AppUser, type Role } from "./auth"
 import { createSupabaseServerClient } from "./supabase/server"
-
-type Role = AppUser["role"]
 
 const ROLE_RANK: Record<Role, number> = {
   pending: 0,
@@ -10,6 +8,7 @@ const ROLE_RANK: Record<Role, number> = {
   designer: 2,
   strategist: 3,
   admin: 4,
+  super_admin: 5,
 }
 
 export async function requireRole(min: Role): Promise<AppUser> {
@@ -20,7 +19,7 @@ export async function requireRole(min: Role): Promise<AppUser> {
 
 export async function requireBrandAccess(brandId: string): Promise<AppUser> {
   const user = await requireApprovedUser()
-  if (user.role === "admin") return user
+  if (user.role === "admin" || user.role === "super_admin") return user
 
   const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase
@@ -35,9 +34,13 @@ export async function requireBrandAccess(brandId: string): Promise<AppUser> {
 }
 
 export function canEditStrategy(role: Role) {
-  return role === "admin" || role === "strategist"
+  return role === "super_admin" || role === "admin" || role === "strategist"
 }
 
 export function canManageUsers(role: Role) {
-  return role === "admin"
+  return role === "super_admin" || role === "admin"
+}
+
+export function canViewAs(actualRole: Role) {
+  return actualRole === "super_admin"
 }

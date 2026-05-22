@@ -8,7 +8,7 @@ import { recordAudit } from "@/lib/audit"
 
 const RoleSchema = z.object({
   userId: z.string().uuid(),
-  role: z.enum(["admin", "strategist", "designer", "viewer", "pending"]),
+  role: z.enum(["super_admin", "admin", "strategist", "designer", "viewer", "pending"]),
 })
 
 export async function updateUserRole(formData: FormData) {
@@ -18,8 +18,12 @@ export async function updateUserRole(formData: FormData) {
     role: formData.get("role"),
   })
   if (!parsed.success) throw new Error("Invalid input")
-  if (parsed.data.userId === admin.id && parsed.data.role !== "admin") {
-    throw new Error("You can't demote yourself.")
+  // Only a real super_admin can hand out the super_admin role.
+  if (parsed.data.role === "super_admin" && admin.actualRole !== "super_admin") {
+    throw new Error("Only a super admin can assign super admin.")
+  }
+  if (parsed.data.userId === admin.id && parsed.data.role !== admin.actualRole) {
+    throw new Error("You can't change your own role.")
   }
 
   const supabase = await createSupabaseServerClient()
