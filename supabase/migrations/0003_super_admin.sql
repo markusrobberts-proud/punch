@@ -1,13 +1,15 @@
 -- Add super_admin role. Highest privilege tier.
--- super_admin behaves exactly like admin for RLS, but the app layer
--- lets them toggle a "view as" preview of other roles for QA purposes.
 --
--- IMPORTANT: ALTER TYPE ADD VALUE cannot run inside a transaction that
--- also uses the new value. If Supabase SQL editor rejects this whole
--- block at once, run the ALTER TYPE statement first on its own, then
--- run the rest.
+-- IMPORTANT: Postgres won't let you reference a new enum value in the
+-- same transaction that adds it. Run this file in TWO separate steps
+-- in the Supabase SQL editor.
+--
+-- STEP 1: run just this one line on its own:
 
 alter type user_role add value if not exists 'super_admin' before 'admin';
+
+-- STEP 2: run everything below this comment as a second query.
+-- (Splitting at the blank line is enough; Supabase commits between.)
 
 create or replace function public.is_admin() returns boolean
 language sql stable as $$
