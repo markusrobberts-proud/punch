@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -54,13 +54,44 @@ export function Sidebar({
   const pathname = usePathname()
   const router = useRouter()
   const [switcherOpen, setSwitcherOpen] = useState(false)
+  const switcherRef = useRef<HTMLDivElement | null>(null)
 
   // Fall back to deriving the slug from the URL if the layout couldn't
   // (e.g. transient pathname-header issue). Keeps the switcher honest
-  // regardless of how the prop got here.
+  // regardless of how the prop got here. We only match a real brand page
+  // (/brands/[slug]), not the index (/brands), so visiting the grid clears
+  // the active brand instead of getting "stuck" on the last one viewed.
   const slugFromPath = pathname.match(/^\/brands\/([^/?#]+)/)?.[1] ?? null
   const slugCandidate = activeBrandSlug ?? slugFromPath
   const activeBrand = brands.find((b) => b.slug === slugCandidate) ?? null
+
+  // Close the switcher on route change so the dropdown doesn't get stuck
+  // open across navigations (e.g. clicking "Brands" in the org nav while
+  // the dropdown was open on /brands/[slug]).
+  useEffect(() => {
+    setSwitcherOpen(false)
+  }, [pathname])
+
+  // Outside-click + Escape to close. Without this the dropdown stays open
+  // indefinitely on the /brands index (where clicking a brand row is the
+  // only existing close path), which is the reported "stuck" behaviour.
+  useEffect(() => {
+    if (!switcherOpen) return
+    const onPointerDown = (e: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+        setSwitcherOpen(false)
+      }
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSwitcherOpen(false)
+    }
+    document.addEventListener("mousedown", onPointerDown)
+    document.addEventListener("keydown", onKey)
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown)
+      document.removeEventListener("keydown", onKey)
+    }
+  }, [switcherOpen])
 
   // Clients get a stripped nav: just their work, none of the internal
   // sausage (Proud Strategy, knowledge bank, brand settings).
@@ -116,9 +147,12 @@ export function Sidebar({
       </div>
 
       {brands.length > 0 && (
-        <div className="px-2 pt-3 pb-1">
+        <div className="px-2 pt-3 pb-1" ref={switcherRef}>
           <SectionLabel>Brand</SectionLabel>
           <button
+            type="button"
+            aria-haspopup="listbox"
+            aria-expanded={switcherOpen}
             onClick={() => setSwitcherOpen((v) => !v)}
             className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md hover:bg-white/60 transition"
           >
@@ -135,10 +169,13 @@ export function Sidebar({
           </button>
 
           {switcherOpen && (
-            <div className="mt-1 bg-white rounded-lg p-1 card-shadow fade-in">
+            <div className="mt-1 bg-white rounded-lg p-1 card-shadow fade-in max-h-[60vh] overflow-y-auto" role="listbox">
               {brands.map((b) => (
                 <button
                   key={b.id}
+                  type="button"
+                  role="option"
+                  aria-selected={b.slug === activeBrand?.slug}
                   onClick={() => {
                     setSwitcherOpen(false)
                     router.push(`/brands/${b.slug}`)
