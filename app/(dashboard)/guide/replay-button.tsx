@@ -1,34 +1,43 @@
 "use client"
 
-import { useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { resetWelcomeTour } from "@/components/layout/welcome-tour-actions"
+import { WelcomeTour } from "@/components/layout/welcome-tour"
+import type { TourStep } from "@/lib/welcome-tour"
 
 /**
- * Lets the user re-trigger the welcome tour. Resets welcome_seen_at to
- * null, then navigates to the home page so the dashboard layout's tour
- * gate sees the new state and pops the modal.
+ * Pops the welcome tour right here on /guide, without a navigation or
+ * cache invalidation dance. Modal is locally controlled so the dismiss
+ * just hides it again instead of writing to the DB.
+ *
+ * The DB flag (welcome_seen_at) is left alone on replay because the
+ * user has already seen the tour; this is just a re-watch.
  */
-export function ReplayTourButton() {
-  const router = useRouter()
-  const [pending, startTransition] = useTransition()
+export function ReplayTourButton({
+  intro,
+  steps,
+  roleLabel,
+}: {
+  intro: string
+  steps: TourStep[]
+  roleLabel: string
+}) {
+  const [showing, setShowing] = useState(false)
 
   return (
-    <Button
-      variant="secondary"
-      size="sm"
-      disabled={pending}
-      onClick={() =>
-        startTransition(async () => {
-          await resetWelcomeTour()
-          router.push("/")
-          router.refresh()
-        })
-      }
-    >
-      <Play /> {pending ? "Starting..." : "Replay tour"}
-    </Button>
+    <>
+      <Button variant="secondary" size="sm" onClick={() => setShowing(true)}>
+        <Play /> Replay tour
+      </Button>
+      {showing && (
+        <WelcomeTour
+          intro={intro}
+          steps={steps}
+          roleLabel={roleLabel}
+          onDismiss={() => setShowing(false)}
+        />
+      )}
+    </>
   )
 }

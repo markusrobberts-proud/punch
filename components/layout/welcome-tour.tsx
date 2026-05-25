@@ -44,10 +44,17 @@ export function WelcomeTour({
   intro,
   steps,
   roleLabel,
+  /**
+   * When provided, dismiss closes the modal via this callback instead of
+   * writing welcome_seen_at server-side. The Replay button on /guide
+   * passes this so a replay doesn't redundantly stamp the user's record.
+   */
+  onDismiss,
 }: {
   intro: string
   steps: TourStep[]
   roleLabel: string
+  onDismiss?: () => void
 }) {
   const router = useRouter()
   const [open, setOpen] = useState(true)
@@ -61,6 +68,10 @@ export function WelcomeTour({
 
   function dismiss() {
     setOpen(false)
+    if (onDismiss) {
+      onDismiss()
+      return
+    }
     startTransition(async () => {
       await dismissWelcomeTour()
       router.refresh()

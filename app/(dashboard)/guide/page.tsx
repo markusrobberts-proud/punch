@@ -46,7 +46,15 @@ export default async function GuidePage() {
         eyebrow="How to use PUNCH"
         title={`Welcome, ${user.displayName ?? user.email.split("@")[0]}`}
         description={tour.intro}
-        actions={<ReplayTourButton />}
+        actions={
+          tour.steps.length > 0 ? (
+            <ReplayTourButton
+              intro={tour.intro}
+              steps={tour.steps}
+              roleLabel={user.role.replace(/_/g, " ")}
+            />
+          ) : undefined
+        }
       />
 
       <div className="space-y-4">
