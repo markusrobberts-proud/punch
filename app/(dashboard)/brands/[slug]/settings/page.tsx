@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { requireApprovedUser } from "@/lib/auth"
-import { canEditStrategy, canManageUsers } from "@/lib/rbac"
+import { canEditStrategy, canManageUsers, canSeeInternalSurfaces } from "@/lib/rbac"
 import { getBrandBySlug } from "@/lib/brands"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +31,7 @@ type BrandRow = {
 export default async function BrandSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const user = await requireApprovedUser()
   const { slug } = await params
+  if (!canSeeInternalSurfaces(user.role)) redirect(`/brands/${slug}`)
   const brand = (await getBrandBySlug(slug)) as BrandRow | null
   if (!brand) notFound()
 

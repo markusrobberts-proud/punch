@@ -5,7 +5,7 @@ import { requireApprovedUser } from "@/lib/auth"
 import { getBrandBySlug } from "@/lib/brands"
 import { listPlansForBrand } from "@/lib/campaigns"
 import { MONTHS } from "@/lib/months"
-import { canEditStrategy, canEditBrief } from "@/lib/rbac"
+import { canEditStrategy, canEditBrief, isClient } from "@/lib/rbac"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -37,10 +37,10 @@ export default async function BrandCalendarPage({ params }: { params: Promise<{ 
   if (!brand) notFound()
   const plans = await listPlansForBrand(brand.id)
   const canPlan = canEditStrategy(user.role)
-  // Designers (and clients) don't run generations: surface "See brief" /
-  // "Brief pending" rows instead of strategist status chips.
   const designerView = !canPlan && canEditBrief(user.role)
-  const viewerOnly = !canPlan && !designerView
+  const clientView = isClient(user.role)
+  // Internal team without plan rights (designers, plain viewers if any).
+  const viewerOnly = !canPlan && !designerView && !clientView
 
   const byYear = plans.reduce<Record<number, typeof plans>>((acc, p) => {
     acc[p.year] ??= []
@@ -52,8 +52,12 @@ export default async function BrandCalendarPage({ params }: { params: Promise<{ 
     <PageShell>
       <PageHeader
         eyebrow={brand.name}
-        title="Campaign Calendar"
-        description="One plan per month. Draft, review, approve, then move into copy and brief generation."
+        title={clientView ? "Your campaigns" : "Campaign Calendar"}
+        description={
+          clientView
+            ? "Campaigns Proud is preparing for you. Open one to review, approve, and leave comments per email."
+            : "One plan per month. Draft, review, approve, then move into copy and brief generation."
+        }
         actions={
           canPlan && (
             <Button asChild>
@@ -78,14 +82,18 @@ export default async function BrandCalendarPage({ params }: { params: Promise<{ 
                     ? "Plan your first month"
                     : designerView
                       ? "No briefs yet"
-                      : "No campaigns yet"}
+                      : clientView
+                        ? "Nothing to review yet"
+                        : "No campaigns yet"}
                 </CardTitle>
                 <CardDescription>
                   {canPlan
                     ? "Give Claude cadence targets and a short brief. It'll propose a calendar grounded in Proud Strategy + this brand's knowledge bank."
                     : designerView
                       ? "Briefs will appear here once a strategist plans the next campaign. Nothing to do right now."
-                      : "Campaigns will appear here once a strategist plans the next month."}
+                      : clientView
+                        ? "Proud is preparing your next campaign. You'll get a notification the moment it's ready for your review."
+                        : "Campaigns will appear here once a strategist plans the next month."}
                 </CardDescription>
               </div>
             </div>
@@ -116,7 +124,7 @@ export default async function BrandCalendarPage({ params }: { params: Promise<{ 
                       // when the brief is actually ready; otherwise we show a
                       // dim "Brief pending" row so they know it's coming
                       // without dead-ending on a half-built plan.
-                      const blockClick = (designerView || viewerOnly) && !briefReady
+                      const blockClick = (designerView || viewerOnly || clientView) && !briefReady
                       const rowClasses = `flex items-center justify-between gap-4 px-5 py-4 transition ${
                         idx === list.length - 1 ? "" : "border-b border-[#E5E5EA]"
                       } ${blockClick ? "opacity-60 cursor-not-allowed" : "hover:bg-white/60"}`
@@ -128,11 +136,11 @@ export default async function BrandCalendarPage({ params }: { params: Promise<{ 
                         </div>
                       ) : briefReady ? (
                         <span className="inline-flex items-center gap-1.5 text-[12px] text-[#007AFF] font-medium">
-                          <FileText className="size-3.5" /> See brief
+                          <FileText className="size-3.5" /> {clientView ? "Review campaign" : "See brief"}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 text-[12px] text-[#86868B] font-medium">
-                          <Clock className="size-3.5" /> Brief pending
+                          <Clock className="size-3.5" /> {clientView ? "Coming soon" : "Brief pending"}
                         </span>
                       )
 

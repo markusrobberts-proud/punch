@@ -1,6 +1,7 @@
+import { redirect } from "next/navigation"
 import { Clock, Sparkles, Users } from "lucide-react"
 import { requireApprovedUser } from "@/lib/auth"
-import { canEditStrategy } from "@/lib/rbac"
+import { canEditStrategy, canSeeInternalSurfaces } from "@/lib/rbac"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { PageHeader, PageShell } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
@@ -25,6 +26,7 @@ export default async function StrategyPage({
   searchParams: Promise<{ s?: string }>
 }) {
   const user = await requireApprovedUser()
+  if (!canSeeInternalSurfaces(user.role)) redirect("/")
   const editable = canEditStrategy(user.role)
   const { s: activeKey } = await searchParams
 

@@ -9,8 +9,9 @@ import {
   Eye,
   Trash2,
 } from "lucide-react"
+import { redirect } from "next/navigation"
 import { requireApprovedUser } from "@/lib/auth"
-import { canContributeKnowledge, canReviewKnowledge } from "@/lib/rbac"
+import { canContributeKnowledge, canReviewKnowledge, canSeeInternalSurfaces } from "@/lib/rbac"
 import { getBrandBySlug } from "@/lib/brands"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -61,9 +62,10 @@ export default async function BrandKnowledgePage({
   searchParams: Promise<{ status?: string; tab?: string }>
 }) {
   const user = await requireApprovedUser()
+  const { slug } = await params
+  if (!canSeeInternalSurfaces(user.role)) redirect(`/brands/${slug}`)
   const canContribute = canContributeKnowledge(user.role)
   const canReview = canReviewKnowledge(user.role)
-  const { slug } = await params
   const { status: statusFilter = "all", tab = "documents" } = await searchParams
   const brand = await getBrandBySlug(slug)
   if (!brand) notFound()

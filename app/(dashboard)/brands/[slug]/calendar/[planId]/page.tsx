@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, Sparkles } from "lucide-react"
 import { requireApprovedUser } from "@/lib/auth"
-import { canEditCopy, canEditBrief, canRunGenerations } from "@/lib/rbac"
+import { canEditCopy, canEditBrief, canRunGenerations, isClient } from "@/lib/rbac"
 // Strategist+ can delete plans (matches canRunGenerations).
 import { getBrandBySlug } from "@/lib/brands"
 import { getPlanWithEmails } from "@/lib/campaigns"
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import { PlanControls } from "./plan-controls"
 import { EmailRow } from "./email-row"
 import { ApprovalPoller } from "./approval-poller"
+import { ClientPlanView } from "./client-plan-view"
 
 type ApprovalAction = {
   campaign_email_id: string | null
@@ -39,16 +40,26 @@ export default async function PlanDetailPage({
   const canGenerate = canRunGenerations(user.role)
   const copyUnlocked = plan.status !== "draft" && plan.status !== "generating" && plan.status !== "pending_review"
 
-  // Pull approval link IDs + latest action per email for this plan.
   const supabase = await createSupabaseServerClient()
+
+  // Pull approval link IDs + latest action per email for this plan. We
+  // pull actions from BOTH token-based shares (approval_links →
+  // approval_actions) AND authenticated client actions (direct
+  // approval_actions.user_id) so both surfaces share state.
   const { data: links } = await supabase
     .from("approval_links")
     .select("id, created_at, expires_at")
     .eq("plan_id", planId)
   const linkIds = ((links ?? []) as Array<{ id: string }>).map((l) => l.id)
 
-  let latestByEmail = new Map<string, ApprovalAction>()
+  // Build a single set of email_ids we care about so we can fetch
+  // direct (user-based) actions for them too.
+  const emailIds = emails.map((e) => e.id)
+
+  const latestByEmail = new Map<string, ApprovalAction>()
   let totalActions = 0
+
+  // Token-based actions
   if (linkIds.length > 0) {
     const { data: actions } = await supabase
       .from("approval_actions")
@@ -56,13 +67,47 @@ export default async function PlanDetailPage({
       .in("approval_link_id", linkIds)
       .order("acted_at", { ascending: false })
     const list = (actions ?? []) as ApprovalAction[]
-    totalActions = list.length
+    totalActions += list.length
     for (const a of list) {
       if (!a.campaign_email_id) continue
       if (!latestByEmail.has(a.campaign_email_id) && a.action !== "comment") {
         latestByEmail.set(a.campaign_email_id, a)
       }
     }
+  }
+
+  // Direct (authenticated client) actions
+  if (emailIds.length > 0) {
+    const { data: direct } = await supabase
+      .from("approval_actions")
+      .select("campaign_email_id, action, comment, acted_at")
+      .in("campaign_email_id", emailIds)
+      .is("approval_link_id", null)
+      .not("user_id", "is", null)
+      .order("acted_at", { ascending: false })
+    const list = (direct ?? []) as ApprovalAction[]
+    totalActions += list.length
+    for (const a of list) {
+      if (!a.campaign_email_id) continue
+      // Only overwrite if this direct action is newer than what we have.
+      const existing = latestByEmail.get(a.campaign_email_id)
+      if (!existing || new Date(a.acted_at) > new Date(existing.acted_at)) {
+        if (a.action !== "comment") latestByEmail.set(a.campaign_email_id, a)
+      }
+    }
+  }
+
+  // Authenticated client: render the stripped-down review view instead
+  // of the strategist-machinery one.
+  if (isClient(user.role)) {
+    return (
+      <ClientPlanView
+        brand={{ slug: brand.slug as string, name: brand.name as string, primary_color: (brand.primary_color as string | null) ?? null }}
+        plan={plan}
+        emails={emails}
+        latestActionByEmail={latestByEmail}
+      />
+    )
   }
 
   const sharedAt = (links?.[0] as { created_at: string } | undefined)?.created_at ?? null

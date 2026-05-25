@@ -58,6 +58,7 @@ export async function DashboardLayout({
       {user.viewingAs && <ViewAsBanner role={user.viewingAs} />}
       <div className="flex flex-1 min-h-0">
         <Sidebar
+          role={user.role}
           brands={brands}
           activeBrandSlug={activeBrandSlug}
           userInitials={initialsFromName(user.displayName ?? user.email)}

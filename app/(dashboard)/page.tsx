@@ -79,7 +79,7 @@ function roleTitle(role: AppUser["role"]): string {
     case "designer":
       return "Your design queue"
     case "client":
-      return "What's shipping"
+      return "Your campaigns"
     default:
       return "Welcome"
   }
@@ -95,7 +95,7 @@ function roleSubtitle(role: AppUser["role"]): string {
     case "designer":
       return "Briefs ready for design, recent Asana exports, and what's coming next."
     case "client":
-      return "Recent campaign progress and client approvals across your brands."
+      return "What's ready for you to review, what's coming up next, and a way back to each brand."
     default:
       return ""
   }
@@ -125,7 +125,9 @@ function roleDashboard({
   if (user.role === "designer") {
     return <DesignerDashboard data={data} brandMap={brandMap} />
   }
-  return <ViewerDashboard data={data} brands={brands} brandMap={brandMap} />
+  // Catches "client" (renamed from "viewer"). Pending users never reach
+  // this page; they're bounced to /awaiting-approval.
+  return <ClientDashboard data={data} brands={brands} brandMap={brandMap} />
 }
 
 /* -------------------- ADMIN -------------------- */
@@ -432,7 +434,7 @@ function DesignerDashboard({
 
 /* -------------------- VIEWER -------------------- */
 
-function ViewerDashboard({
+function ClientDashboard({
   data,
   brands,
   brandMap,
@@ -441,33 +443,58 @@ function ViewerDashboard({
   brands: Brand[]
   brandMap: Map<string, Brand>
 }) {
+  // Clients only see activity for brands they're a member of. The brands
+  // list is already scoped by listAccessibleBrands; filter plans the
+  // same way so we don't leak active campaigns from other accounts.
+  const myPlans = data.activePlans.filter((p) => brandMap.has(p.brand_id))
+  const readyToReview = myPlans.filter((p) =>
+    ["briefs_done", "complete", "copy_done"].includes(p.status as string),
+  )
+
   return (
     <>
-      <div className="grid grid-cols-4 gap-3 mb-10">
-        <Stat label="Brands" value={brands.length} />
-        <Stat label="Active plans" value={data.counts.activePlans} />
-        <Stat label="Completed this month" value={data.counts.completeThisMonth} tone="#166D2F" />
-        <Stat label="Client actions" value={data.recentClientFeedback.length} />
+      <div className="grid grid-cols-3 gap-3 mb-10">
+        <Stat label="Your brands" value={brands.length} />
+        <Stat label="Waiting on you" value={readyToReview.length} tone={readyToReview.length > 0 ? "#0A4B91" : undefined} />
+        <Stat label="In progress" value={Math.max(0, myPlans.length - readyToReview.length)} />
       </div>
 
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2 space-y-6">
-          <Section title="What's in flight" right={<Link href="/brands" className="text-[12px] text-[#007AFF] hover:underline">Brands →</Link>}>
-            <PlansList plans={data.activePlans.slice(0, 5)} brandMap={brandMap} />
+          <Section
+            title="Ready for your review"
+            right={
+              readyToReview.length === 0 ? (
+                <span className="text-[12px] text-[#86868B]">Nothing pending</span>
+              ) : undefined
+            }
+          >
+            {readyToReview.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-[13.5px] text-[#86868B] leading-relaxed">
+                  Proud is preparing your next campaign. We'll send a notification the moment something needs your approval.
+                </CardContent>
+              </Card>
+            ) : (
+              <PlansList plans={readyToReview.slice(0, 5)} brandMap={brandMap} />
+            )}
           </Section>
 
-          {data.recentClientFeedback.length > 0 && (
-            <Section title="Recent client actions">
-              <ClientFeedbackList items={data.recentClientFeedback.slice(0, 5)} brandMap={brandMap} />
+          {myPlans.length > readyToReview.length && (
+            <Section title="Coming soon">
+              <PlansList
+                plans={myPlans.filter((p) => !readyToReview.includes(p)).slice(0, 5)}
+                brandMap={brandMap}
+              />
             </Section>
           )}
         </div>
 
         <div className="space-y-6">
-          <Section title="Browse">
+          <Section title="Your brands">
             <div className="space-y-2">
-              {brands.slice(0, 4).map((b) => (
-                <Link key={b.id} href={`/brands/${b.slug}`} className="block">
+              {brands.slice(0, 6).map((b) => (
+                <Link key={b.id} href={`/brands/${b.slug}/calendar`} className="block">
                   <Card hoverable>
                     <CardContent className="p-4 flex items-center gap-3">
                       <BrandIcon
@@ -478,7 +505,7 @@ function ViewerDashboard({
                       />
                       <div className="min-w-0">
                         <div className="text-[13px] font-medium truncate">{b.name}</div>
-                        <div className="text-[11.5px] text-[#86868B] truncate">{b.industry ?? "–"}</div>
+                        <div className="text-[11.5px] text-[#86868B] truncate">View campaigns</div>
                       </div>
                     </CardContent>
                   </Card>

@@ -22,6 +22,8 @@ import { cn } from "@/lib/utils"
 import { BrandIcon } from "@/components/ui/brand-icon"
 import { NotificationBell } from "./notification-bell"
 import type { Notification } from "@/lib/notifications"
+import type { Role } from "@/lib/auth"
+import { canSeeInternalSurfaces, isClient } from "@/lib/rbac"
 
 type Brand = {
   id: string
@@ -32,6 +34,7 @@ type Brand = {
 }
 
 export function Sidebar({
+  role,
   brands,
   activeBrandSlug,
   userInitials,
@@ -40,6 +43,7 @@ export function Sidebar({
   initialNotifications,
   initialUnread,
 }: {
+  role: Role
   brands: Brand[]
   activeBrandSlug: string | null
   userInitials: string
@@ -59,21 +63,33 @@ export function Sidebar({
   const slugCandidate = activeBrandSlug ?? slugFromPath
   const activeBrand = brands.find((b) => b.slug === slugCandidate) ?? null
 
-  const orgNav = [
+  // Clients get a stripped nav: just their work, none of the internal
+  // sausage (Proud Strategy, knowledge bank, brand settings).
+  const showInternal = canSeeInternalSurfaces(role)
+  const clientView = isClient(role)
+
+  const orgNav: Array<{ href: string; label: string; icon: typeof Home; exact?: boolean }> = [
     { href: "/", label: "Home", icon: LayoutDashboard, exact: true },
-    { href: "/brands", label: "Brands", icon: Home },
-    { href: "/strategy", label: "Proud Strategy", icon: Compass },
-    { href: "/knowledge", label: "Knowledge Bank", icon: BookOpen },
+    { href: "/brands", label: clientView ? "Your brands" : "Brands", icon: Home },
   ]
+  if (showInternal) {
+    orgNav.push({ href: "/strategy", label: "Proud Strategy", icon: Compass })
+    orgNav.push({ href: "/knowledge", label: "Knowledge Bank", icon: BookOpen })
+  }
 
   const brandNav = activeBrand
-    ? [
-        { href: `/brands/${activeBrand.slug}`, label: "Dashboard", icon: Home },
-        { href: `/brands/${activeBrand.slug}/calendar`, label: "Campaign Calendar", icon: Calendar },
-        { href: `/brands/${activeBrand.slug}/knowledge`, label: "Knowledge Bank", icon: BookOpen },
-        { href: `/brands/${activeBrand.slug}/klaviyo`, label: "Performance", icon: BarChart3, soon: true },
-        { href: `/brands/${activeBrand.slug}/settings`, label: "Brand Settings", icon: Settings },
-      ]
+    ? clientView
+      ? [
+          { href: `/brands/${activeBrand.slug}`, label: "Overview", icon: Home },
+          { href: `/brands/${activeBrand.slug}/calendar`, label: "Campaigns", icon: Calendar },
+        ]
+      : [
+          { href: `/brands/${activeBrand.slug}`, label: "Dashboard", icon: Home },
+          { href: `/brands/${activeBrand.slug}/calendar`, label: "Campaign Calendar", icon: Calendar },
+          { href: `/brands/${activeBrand.slug}/knowledge`, label: "Knowledge Bank", icon: BookOpen },
+          { href: `/brands/${activeBrand.slug}/klaviyo`, label: "Performance", icon: BarChart3, soon: true },
+          { href: `/brands/${activeBrand.slug}/settings`, label: "Brand Settings", icon: Settings },
+        ]
     : []
 
   const isActive = (href: string, exact = false) =>
@@ -143,16 +159,18 @@ export function Sidebar({
                   {b.slug === activeBrand?.slug && <Check className="size-3 ml-auto text-[#007AFF]" />}
                 </button>
               ))}
-              <Link
-                href="/brands/new"
-                onClick={() => setSwitcherOpen(false)}
-                className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] text-[#6E6E73] hover:bg-[#F5F5F7]"
-              >
-                <div className="w-5 h-5 rounded-md border border-dashed border-[#D2D2D7] flex items-center justify-center">
-                  <Plus className="size-2.5" />
-                </div>
-                <span>Add brand</span>
-              </Link>
+              {showInternal && (
+                <Link
+                  href="/brands/new"
+                  onClick={() => setSwitcherOpen(false)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] text-[#6E6E73] hover:bg-[#F5F5F7]"
+                >
+                  <div className="w-5 h-5 rounded-md border border-dashed border-[#D2D2D7] flex items-center justify-center">
+                    <Plus className="size-2.5" />
+                  </div>
+                  <span>Add brand</span>
+                </Link>
+              )}
             </div>
           )}
 
@@ -175,23 +193,28 @@ export function Sidebar({
 
       <div className="flex-1" />
 
-      <div className="px-3 pb-3">
-        <div className="bg-white rounded-lg p-3 card-shadow">
-          <div className="flex items-center gap-1.5 mb-1">
-            <Sparkles className="size-3 text-[#007AFF]" />
-            <span className="text-[11px] font-medium">
-              {claudeStatus.connected ? "Claude is connected" : "Add an API key to enable Claude"}
-            </span>
+      {/* The Claude-status card is internal-only. Clients don't need to know
+          which AI model is wired up; the platform should feel like a calm
+          client portal, not the agency's command centre. */}
+      {showInternal && (
+        <div className="px-3 pb-3">
+          <div className="bg-white rounded-lg p-3 card-shadow">
+            <div className="flex items-center gap-1.5 mb-1">
+              <Sparkles className="size-3 text-[#007AFF]" />
+              <span className="text-[11px] font-medium">
+                {claudeStatus.connected ? "Claude is connected" : "Add an API key to enable Claude"}
+              </span>
+            </div>
+            <p className="text-[11px] text-[#6E6E73] leading-relaxed">
+              {claudeStatus.connected && claudeStatus.brandName
+                ? `Reading Proud Strategy + ${claudeStatus.docs} docs from ${claudeStatus.brandName}.`
+                : claudeStatus.connected
+                  ? `Reading Proud Strategy across all brands.`
+                  : `Set ANTHROPIC_API_KEY to wire up generations.`}
+            </p>
           </div>
-          <p className="text-[11px] text-[#6E6E73] leading-relaxed">
-            {claudeStatus.connected && claudeStatus.brandName
-              ? `Reading Proud Strategy + ${claudeStatus.docs} docs from ${claudeStatus.brandName}.`
-              : claudeStatus.connected
-                ? `Reading Proud Strategy across all brands.`
-                : `Set ANTHROPIC_API_KEY to wire up generations.`}
-          </p>
         </div>
-      </div>
+      )}
 
       <div className="px-3 pb-4">
         <Link

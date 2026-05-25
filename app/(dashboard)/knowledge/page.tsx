@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { FileText, Mail, Notebook, BookOpen, Sparkles } from "lucide-react"
+import { redirect } from "next/navigation"
 import { requireApprovedUser } from "@/lib/auth"
-import { canContributeKnowledge, canReviewKnowledge } from "@/lib/rbac"
+import { canContributeKnowledge, canReviewKnowledge, canSeeInternalSurfaces } from "@/lib/rbac"
 import { listAccessibleBrands } from "@/lib/brands"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -37,6 +38,7 @@ export default async function KnowledgeBankPage({
   searchParams: Promise<{ brand?: string; status?: string }>
 }) {
   const user = await requireApprovedUser()
+  if (!canSeeInternalSurfaces(user.role)) redirect("/")
   const canContribute = canContributeKnowledge(user.role)
   const canReview = canReviewKnowledge(user.role)
   const params = await searchParams

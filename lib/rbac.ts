@@ -87,3 +87,17 @@ export function canEditCopy(role: Role) {
 export function canRunGenerations(role: Role) {
   return canEditStrategy(role)
 }
+
+/**
+ * Internal-only views: Proud Strategy, the global knowledge bank, per-
+ * brand knowledge bank + brand settings. Clients (the brand's actual
+ * stakeholders) should never see these. Internal team members do.
+ */
+export function canSeeInternalSurfaces(role: Role) {
+  return role !== "client" && role !== "pending"
+}
+
+/** Convenience: is this user an external client (not internal team)? */
+export function isClient(role: Role) {
+  return role === "client"
+}
