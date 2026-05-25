@@ -21,6 +21,10 @@ const BrandSchema = z.object({
   font_body: z.string().max(120).optional().or(z.literal("")),
   tone_of_voice: z.string().max(4000).optional().or(z.literal("")),
   target_audience: z.string().max(4000).optional().or(z.literal("")),
+  // Optional pre-extracted brand profile markdown, used when the user has
+  // already run "Auto-fill from website" on the form. If present, the
+  // background scrape skips AI extraction and just stores raw pages.
+  prefilled_profile_md: z.string().max(40000).optional().or(z.literal("")),
 })
 
 export type BrandFormState = {
@@ -69,7 +73,24 @@ export async function createBrandAction(
 
   if (error || !data) return { ok: false, error: error?.message ?? "Could not create brand" }
 
-  await supabase.from("brand_members").insert({ brand_id: data.id, user_id: user.id, role: user.role })
+  await supabase
+    .from("brand_members")
+    .insert({ brand_id: data.id, user_id: user.id, role: user.role })
+
+  // If the user already ran "Auto-fill from website" on the form, store the
+  // extracted profile as a knowledge item right now so it's instantly
+  // available to Claude on the very next generation.
+  if (parsed.data.prefilled_profile_md) {
+    await supabase.from("knowledge_items").insert({
+      brand_id: data.id,
+      source_type: "brand_guide",
+      title: "Brand profile (auto-extracted)",
+      content: parsed.data.prefilled_profile_md,
+      source_url: parsed.data.website_url || null,
+      review_status: "approved",
+      added_by_user_id: user.id,
+    })
+  }
 
   await recordAudit({
     userId: user.id,
@@ -77,11 +98,15 @@ export async function createBrandAction(
     entityType: "brand",
     entityId: data.id,
     action: "create",
-    meta: { name: parsed.data.name },
+    meta: {
+      name: parsed.data.name,
+      prefilled: !!parsed.data.prefilled_profile_md,
+    },
   })
 
+  // Always queue a background scrape so the raw pages land in the knowledge
+  // bank too. Skipped only if there's no website URL.
   if (parsed.data.website_url) {
-    // Fire-and-forget so the redirect isn't blocked on the scrape.
     runWebsiteScrape(data.id).catch((err) => console.error("[scrape] background failure:", err))
   }
 
