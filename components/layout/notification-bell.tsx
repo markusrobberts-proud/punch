@@ -152,7 +152,10 @@ export function NotificationBell({
       {open && (
         <div
           ref={panelRef}
-          className="absolute right-0 top-[calc(100%+6px)] w-[340px] max-h-[70vh] overflow-hidden bg-white rounded-xl card-shadow-hover border border-[#E5E5EA] z-50 flex flex-col fade-in"
+          // Bell lives in the left-hand sidebar, so anchoring the panel to
+          // the bell's left edge opens it into the content area instead of
+          // off-screen to the left.
+          className="absolute left-0 top-[calc(100%+6px)] w-[340px] max-h-[70vh] overflow-hidden bg-white rounded-xl card-shadow-hover border border-[#E5E5EA] z-50 flex flex-col fade-in"
         >
           <div className="px-4 py-3 flex items-center justify-between border-b border-[#E5E5EA]">
             <div className="text-[13px] font-semibold">Notifications</div>
