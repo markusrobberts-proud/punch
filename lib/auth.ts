@@ -4,8 +4,12 @@ import { unstable_cache } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, currentUser } from "@clerk/nextjs/server"
 import { createSupabaseServiceClient } from "./supabase/server"
+import type { Role } from "./roles"
 
-export type Role = "super_admin" | "admin" | "strategist" | "designer" | "client" | "pending"
+// Re-export so existing `import { Role } from "@/lib/auth"` callers keep
+// working. The canonical definition lives in lib/roles.ts so client
+// components can import role types without pulling Clerk/Supabase code.
+export type { Role }
 
 export type AppUser = {
   id: string

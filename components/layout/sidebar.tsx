@@ -22,8 +22,7 @@ import { cn } from "@/lib/utils"
 import { BrandIcon } from "@/components/ui/brand-icon"
 import { NotificationBell } from "./notification-bell"
 import type { Notification } from "@/lib/notifications"
-import type { Role } from "@/lib/auth"
-import { canSeeInternalSurfaces, isClient } from "@/lib/rbac"
+import { canSeeInternalSurfaces, isClient, type Role } from "@/lib/roles"
 
 type Brand = {
   id: string
