@@ -1,5 +1,6 @@
 import { Sidebar } from "./sidebar"
 import { ViewAsBanner } from "./view-as-banner"
+import { DeploymentBanner } from "./deployment-banner"
 import { initialsFromName } from "@/components/ui/avatar"
 import type { AppUser } from "@/lib/auth"
 
@@ -23,8 +24,11 @@ export function DashboardLayout({
   claudeStatus: { connected: boolean; docs: number; brandName: string | null }
   children: React.ReactNode
 }) {
+  const showDeployBanner = user.actualRole === "super_admin"
+
   return (
     <div className="min-h-screen flex flex-col">
+      {showDeployBanner && <DeploymentBanner />}
       {user.viewingAs && <ViewAsBanner role={user.viewingAs} />}
       <div className="flex flex-1 min-h-0">
         <Sidebar
