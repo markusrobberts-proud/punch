@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowRight, BookOpen, Calendar, Compass, Inbox, Mail, MessageSquare, Sparkles } from "lucide-react"
+import { ArrowRight, BookOpen, Calendar, Compass, Inbox, Mail, MessageSquare, Pencil, Sparkles } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { requireApprovedUser } from "@/lib/auth"
 import { canEditStrategy } from "@/lib/rbac"
 import { getBrandBySlug } from "@/lib/brands"
@@ -80,6 +81,13 @@ export default async function BrandDashboard({ params }: { params: Promise<{ slu
               {brand.scrape_status === "done" ? "Indexed" : `Scrape: ${brand.scrape_status}`}
             </Badge>
             {canEdit && brand.website_url && <ScrapeButton brandId={brand.id} status={brand.scrape_status} />}
+            {canEdit && (
+              <Button asChild variant="secondary" size="sm">
+                <Link href={`/brands/${brand.slug}/settings`}>
+                  <Pencil /> Edit
+                </Link>
+              </Button>
+            )}
           </div>
         }
       />

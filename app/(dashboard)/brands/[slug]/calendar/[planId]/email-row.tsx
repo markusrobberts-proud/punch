@@ -20,10 +20,12 @@ export function EmailRow({
   email,
   canEdit,
   copyUnlocked,
+  clientAction,
 }: {
   email: CampaignEmail
   canEdit: boolean
   copyUnlocked: boolean
+  clientAction: { action: string; comment: string | null; acted_at: string } | null
 }) {
   const [expanded, setExpanded] = useState(false)
   const [mode, setMode] = useState<Mode>("view")
@@ -72,6 +74,7 @@ export function EmailRow({
               <StagePill label="Plan" status="done" />
               <StagePill label="Copy" status={email.copy_status} />
               <StagePill label="Brief" status={email.brief_status} />
+              {clientAction && <ClientActionBadge action={clientAction.action} />}
             </div>
             <div className="text-[12px] text-[#86868B] mt-0.5 truncate">
               {email.scheduled_date
@@ -387,6 +390,12 @@ function StagePill({ label, status }: { label: string; status: string }) {
       {label}
     </Badge>
   )
+}
+
+function ClientActionBadge({ action }: { action: string }) {
+  if (action === "approve") return <Badge variant="success">Client approved</Badge>
+  if (action === "request_changes") return <Badge variant="warning">Changes requested</Badge>
+  return <Badge variant="info">Client commented</Badge>
 }
 
 function Field({ label, value, multiline }: { label: string; value: string | null | undefined; multiline?: boolean }) {

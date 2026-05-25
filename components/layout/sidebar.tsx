@@ -65,6 +65,7 @@ export function Sidebar({
         { href: `/brands/${activeBrand.slug}/calendar`, label: "Campaign Calendar", icon: Calendar },
         { href: `/brands/${activeBrand.slug}/knowledge`, label: "Knowledge Bank", icon: BookOpen },
         { href: `/brands/${activeBrand.slug}/klaviyo`, label: "Performance", icon: BarChart3, soon: true },
+        { href: `/brands/${activeBrand.slug}/settings`, label: "Brand Settings", icon: Settings },
       ]
     : []
 

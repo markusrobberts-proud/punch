@@ -6,11 +6,20 @@ import { canEditStrategy } from "@/lib/rbac"
 import { getBrandBySlug } from "@/lib/brands"
 import { getPlanWithEmails } from "@/lib/campaigns"
 import { MONTHS } from "@/lib/months"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageShell } from "@/components/layout/page-header"
 import { Badge } from "@/components/ui/badge"
 import { PlanControls } from "./plan-controls"
 import { EmailRow } from "./email-row"
+import { ApprovalPoller } from "./approval-poller"
+
+type ApprovalAction = {
+  campaign_email_id: string | null
+  action: string
+  comment: string | null
+  acted_at: string
+}
 
 export default async function PlanDetailPage({
   params,
@@ -26,6 +35,36 @@ export default async function PlanDetailPage({
 
   const canEdit = canEditStrategy(user.role)
   const copyUnlocked = plan.status !== "draft" && plan.status !== "generating" && plan.status !== "pending_review"
+
+  // Pull approval link IDs + latest action per email for this plan.
+  const supabase = await createSupabaseServerClient()
+  const { data: links } = await supabase
+    .from("approval_links")
+    .select("id, created_at, expires_at")
+    .eq("plan_id", planId)
+  const linkIds = ((links ?? []) as Array<{ id: string }>).map((l) => l.id)
+
+  let latestByEmail = new Map<string, ApprovalAction>()
+  let totalActions = 0
+  if (linkIds.length > 0) {
+    const { data: actions } = await supabase
+      .from("approval_actions")
+      .select("campaign_email_id, action, comment, acted_at")
+      .in("approval_link_id", linkIds)
+      .order("acted_at", { ascending: false })
+    const list = (actions ?? []) as ApprovalAction[]
+    totalActions = list.length
+    for (const a of list) {
+      if (!a.campaign_email_id) continue
+      if (!latestByEmail.has(a.campaign_email_id) && a.action !== "comment") {
+        latestByEmail.set(a.campaign_email_id, a)
+      }
+    }
+  }
+
+  const sharedAt = (links?.[0] as { created_at: string } | undefined)?.created_at ?? null
+  const approveCount = Array.from(latestByEmail.values()).filter((a) => a.action === "approve").length
+  const changesCount = Array.from(latestByEmail.values()).filter((a) => a.action === "request_changes").length
 
   return (
     <PageShell>
@@ -46,6 +85,23 @@ export default async function PlanDetailPage({
         </div>
         <PlanControls plan={plan} canEdit={canEdit} />
       </div>
+
+      {linkIds.length > 0 && (
+        <Card className="mb-6">
+          <CardContent className="py-4 flex items-center justify-between gap-4 text-[13px]">
+            <div>
+              <div className="font-medium">Client review in progress</div>
+              <div className="text-[11.5px] text-[#86868B] mt-0.5">
+                Shared {sharedAt && new Date(sharedAt).toLocaleDateString()} · {totalActions} client {totalActions === 1 ? "action" : "actions"} so far
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {approveCount > 0 && <Badge variant="success">{approveCount} approved</Badge>}
+              {changesCount > 0 && <Badge variant="warning">{changesCount} changes requested</Badge>}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {plan.strategic_rationale && (
         <Card variant="glass-tinted-blue" className="mb-6">
@@ -100,11 +156,22 @@ export default async function PlanDetailPage({
         </Card>
       ) : (
         <div className="space-y-2">
-          {emails.map((e) => (
-            <EmailRow key={e.id} email={e} canEdit={canEdit} copyUnlocked={copyUnlocked} />
-          ))}
+          {emails.map((e) => {
+            const latest = latestByEmail.get(e.id) ?? null
+            return (
+              <EmailRow
+                key={e.id}
+                email={e}
+                canEdit={canEdit}
+                copyUnlocked={copyUnlocked}
+                clientAction={latest ? { action: latest.action, comment: latest.comment, acted_at: latest.acted_at } : null}
+              />
+            )
+          })}
         </div>
       )}
+
+      {linkIds.length > 0 && <ApprovalPoller planId={planId} initialCount={totalActions} />}
     </PageShell>
   )
 }

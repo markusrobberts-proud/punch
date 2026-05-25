@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { PageHeader, PageShell } from "@/components/layout/page-header"
 import { CopyAddressButton } from "./copy-address-button"
+import { forwardingAddressFor } from "@/lib/inbound-email"
 import { KnowledgeReviewActions } from "@/app/(dashboard)/knowledge/review-actions"
 import { AddNoteDialog } from "@/app/(dashboard)/knowledge/add-note-dialog"
 import { UploadFileDialog } from "./upload-file-dialog"
@@ -77,7 +78,7 @@ export default async function BrandKnowledgePage({
 
   const { data } = await query
   const items = (data ?? []) as KnowledgeRow[]
-  const inboxEmail = brand.inbox_alias ? `${brand.inbox_alias}@kb.proudemail.studio` : null
+  const inboxEmail = forwardingAddressFor(brand.inbox_alias as string | null)
 
   const docCount = items.length
   const pendingCount = items.filter((i) => i.review_status === "pending_review").length
