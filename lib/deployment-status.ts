@@ -23,7 +23,7 @@ type VercelDeployment = {
   createdAt?: number
 }
 
-async function fetchLatestDeployment(): Promise<DeploymentStatus | null> {
+export async function fetchLatestDeployment(): Promise<DeploymentStatus | null> {
   const token = process.env.VERCEL_TOKEN
   const projectId = process.env.VERCEL_PROJECT_ID
   const teamId = process.env.VERCEL_TEAM_ID
@@ -61,13 +61,14 @@ async function fetchLatestDeployment(): Promise<DeploymentStatus | null> {
 }
 
 /**
- * 30-second cache: shaves load on the Vercel API + keeps the status fresh
- * enough to feel live without spamming.
+ * 8-second cache: enough to coalesce a burst of layout renders during one
+ * navigation without making the banner feel stale. The client component
+ * polls fresh every 10s on top of this.
  */
 export const getDeploymentStatus = unstable_cache(
   fetchLatestDeployment,
   ["deployment-status"],
-  { revalidate: 30, tags: ["deployment-status"] },
+  { revalidate: 8, tags: ["deployment-status"] },
 )
 
 export function deploymentStateLabel(state: DeploymentStatus["state"]): {
