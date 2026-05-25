@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
+import "@clerk/ui/themes/shadcn.css";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,30 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: {
-          colorPrimary: "#1D1D1F",
-          colorBackground: "#FFFFFF",
-          colorText: "#1D1D1F",
-          colorTextSecondary: "#6E6E73",
-          borderRadius: "0.75rem",
-          fontFamily:
-            "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif",
-        },
-        elements: {
-          card: "shadow-none border border-[#E5E5EA]",
-          formButtonPrimary: "bg-[#1D1D1F] hover:bg-black text-white",
-        },
-      }}
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <html
-        lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-        suppressHydrationWarning
-      >
-        <body className="min-h-full flex flex-col">{children}</body>
-      </html>
-    </ClerkProvider>
+      <body className="min-h-full flex flex-col">
+        <ClerkProvider appearance={{ theme: shadcn }}>{children}</ClerkProvider>
+      </body>
+    </html>
   );
 }
