@@ -17,6 +17,8 @@ export type CampaignPlan = {
   target_designed_count: number | null
   target_text_count: number | null
   target_sms_count: number | null
+  emails_per_week: number | null
+  total_emails: number | null
   status: PlanStatus
   approved_at: string | null
   created_at: string

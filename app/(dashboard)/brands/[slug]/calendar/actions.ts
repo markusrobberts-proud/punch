@@ -14,37 +14,74 @@ import { MONTHS } from "@/lib/campaigns"
 const CreatePlanSchema = z.object({
   brandId: z.string().uuid(),
   brandSlug: z.string(),
+  name: z.string().max(160).optional().or(z.literal("")),
   month: z.coerce.number().int().min(1).max(12),
   year: z.coerce.number().int().min(2024).max(2100),
   teamBrief: z.string().max(8000).optional().or(z.literal("")),
   targetDesigned: z.coerce.number().int().min(0).max(50).optional(),
   targetText: z.coerce.number().int().min(0).max(50).optional(),
   targetSms: z.coerce.number().int().min(0).max(50).optional(),
+  emailsPerWeek: z.coerce.number().int().min(0).max(50).optional(),
+  totalEmails: z.coerce.number().int().min(0).max(200).optional(),
 })
 
-export async function createPlan(formData: FormData) {
+export type CreatePlanState = {
+  ok: boolean
+  error?: string
+  fieldErrors?: Record<string, string>
+}
+
+/**
+ * Creates a campaign plan and redirects to its detail page. Uses a
+ * useActionState-friendly signature so the form can surface field errors
+ * (e.g. invalid name length) and the dup-key case if someone re-submits
+ * the same plan, instead of throwing a 500.
+ */
+export async function createPlan(
+  _prev: CreatePlanState | null,
+  formData: FormData,
+): Promise<CreatePlanState> {
   const user = await requireRole("strategist")
   const parsed = CreatePlanSchema.safeParse(Object.fromEntries(formData.entries()))
-  if (!parsed.success) throw new Error("Invalid plan input")
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) fieldErrors[issue.path.join(".")] = issue.message
+    return { ok: false, fieldErrors }
+  }
+
+  const fallbackName = `${MONTHS[parsed.data.month - 1]} ${parsed.data.year} Campaign`
+  const name = parsed.data.name?.trim() || fallbackName
 
   const supabase = await createSupabaseServerClient()
   const { data, error } = await supabase
     .from("campaign_plans")
     .insert({
       brand_id: parsed.data.brandId,
-      name: `${MONTHS[parsed.data.month - 1]} ${parsed.data.year} Campaign Plan`,
+      name,
       month: parsed.data.month,
       year: parsed.data.year,
       team_brief: parsed.data.teamBrief || null,
       target_designed_count: parsed.data.targetDesigned ?? null,
       target_text_count: parsed.data.targetText ?? null,
       target_sms_count: parsed.data.targetSms ?? null,
+      emails_per_week: parsed.data.emailsPerWeek ?? null,
+      total_emails: parsed.data.totalEmails ?? null,
       status: "draft",
     })
     .select("id")
     .single()
 
-  if (error || !data) throw new Error(error?.message ?? "Could not create plan")
+  if (error || !data) {
+    const msg = error?.message ?? "Could not create plan"
+    if (msg.includes("duplicate key") || msg.includes("unique")) {
+      return {
+        ok: false,
+        error:
+          "A plan for that brand and month already exists. Apply the 0005_plan_cadence.sql migration in Supabase to allow multiple plans per month, or pick a different month.",
+      }
+    }
+    return { ok: false, error: msg }
+  }
 
   await recordAudit({
     userId: user.id,
@@ -52,6 +89,7 @@ export async function createPlan(formData: FormData) {
     entityType: "campaign_plan",
     entityId: data.id,
     action: "create",
+    meta: { name, emails_per_week: parsed.data.emailsPerWeek ?? null, total_emails: parsed.data.totalEmails ?? null },
   })
 
   revalidatePath(`/brands/${parsed.data.brandSlug}/calendar`)
@@ -66,7 +104,7 @@ export async function generateCalendar(planId: string) {
 
   const { data: plan } = await supabase
     .from("campaign_plans")
-    .select("brand_id, month, year, team_brief, target_designed_count, target_text_count, target_sms_count")
+    .select("brand_id, name, month, year, team_brief, target_designed_count, target_text_count, target_sms_count, emails_per_week, total_emails")
     .eq("id", planId)
     .single()
   if (!plan) throw new Error("Plan not found")
@@ -75,6 +113,7 @@ export async function generateCalendar(planId: string) {
   try {
     generated = await generateCalendarPlan({
       brandId: plan.brand_id,
+      campaignName: plan.name,
       month: plan.month,
       year: plan.year,
       teamBrief: plan.team_brief,
@@ -82,6 +121,10 @@ export async function generateCalendar(planId: string) {
         designed: plan.target_designed_count,
         text: plan.target_text_count,
         sms: plan.target_sms_count,
+      },
+      cadence: {
+        emailsPerWeek: plan.emails_per_week,
+        totalEmails: plan.total_emails,
       },
     })
   } catch (err) {
