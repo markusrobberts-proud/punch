@@ -10,6 +10,7 @@ import { generateCalendarPlan } from "@/lib/ai/prompts/calendar"
 import { generateEmailCopy } from "@/lib/ai/prompts/copy"
 import { generateDesignedBrief, generateTextBrief } from "@/lib/ai/prompts/brief"
 import { MONTHS } from "@/lib/campaigns"
+import { notify, recipientsForBrand } from "@/lib/notifications"
 
 const CreatePlanSchema = z.object({
   brandId: z.string().uuid(),
@@ -233,7 +234,7 @@ export async function approveCalendar(planId: string) {
   const supabase = await createSupabaseServerClient()
   const { data: plan } = await supabase
     .from("campaign_plans")
-    .select("brand_id")
+    .select("brand_id, name, brands(slug, name)")
     .eq("id", planId)
     .single()
 
@@ -249,6 +250,31 @@ export async function approveCalendar(planId: string) {
     entityId: planId,
     action: "approve_calendar",
   })
+
+  // Heads-up to the brand's designers: copy is incoming, briefs will
+  // follow shortly. Strategists know already (they just approved).
+  if (plan?.brand_id) {
+    const brandJoin = Array.isArray(plan.brands) ? plan.brands[0] : plan.brands
+    const brandName = (brandJoin?.name as string | null) ?? "Brand"
+    const brandSlug = (brandJoin?.slug as string | null) ?? null
+    const recipients = await recipientsForBrand({
+      brandId: plan.brand_id as string,
+      minRole: "designer",
+      excludeUserId: user.id,
+    })
+    await notify({
+      recipients,
+      kind: "plan_approved",
+      title: `Calendar approved for "${plan.name}"`,
+      body: `${brandName} · ${(user.displayName ?? user.email)} approved the calendar. Copy + briefs are next.`,
+      link: brandSlug ? `/brands/${brandSlug}/calendar/${planId}` : null,
+      brandId: plan.brand_id as string,
+      entityType: "campaign_plan",
+      entityId: planId,
+      actorUserId: user.id,
+    })
+  }
+
   revalidatePath(`/brands`)
 }
 
@@ -410,6 +436,7 @@ export async function generateAllCopy(planId: string) {
 }
 
 export async function generateAllBriefs(planId: string) {
+  const user = await requireRole("strategist")
   const supabase = await createSupabaseServerClient()
   const { data: emails } = await supabase
     .from("campaign_emails")
@@ -418,6 +445,35 @@ export async function generateAllBriefs(planId: string) {
     .order("sequence_number")
   for (const row of emails ?? []) await generateBriefForEmail(row.id)
   await supabase.from("campaign_plans").update({ status: "briefs_done" }).eq("id", planId)
+
+  // Ping the designers: briefs are ready for them to work.
+  const { data: plan } = await supabase
+    .from("campaign_plans")
+    .select("brand_id, name, brands(slug, name)")
+    .eq("id", planId)
+    .single()
+  if (plan?.brand_id) {
+    const brandJoin = Array.isArray(plan.brands) ? plan.brands[0] : plan.brands
+    const brandName = (brandJoin?.name as string | null) ?? "Brand"
+    const brandSlug = (brandJoin?.slug as string | null) ?? null
+    const recipients = await recipientsForBrand({
+      brandId: plan.brand_id as string,
+      minRole: "designer",
+      excludeUserId: user.id,
+    })
+    await notify({
+      recipients,
+      kind: "briefs_ready",
+      title: `Briefs ready for "${plan.name}"`,
+      body: `${brandName} · ${(emails?.length ?? 0)} ${emails && emails.length === 1 ? "brief is" : "briefs are"} ready to work.`,
+      link: brandSlug ? `/brands/${brandSlug}/calendar/${planId}` : null,
+      brandId: plan.brand_id as string,
+      entityType: "campaign_plan",
+      entityId: planId,
+      actorUserId: user.id,
+    })
+  }
+
   revalidatePath(`/brands`)
 }
 

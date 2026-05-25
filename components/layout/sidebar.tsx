@@ -19,6 +19,8 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BrandIcon } from "@/components/ui/brand-icon"
+import { NotificationBell } from "./notification-bell"
+import type { Notification } from "@/lib/notifications"
 
 type Brand = {
   id: string
@@ -34,12 +36,16 @@ export function Sidebar({
   userInitials,
   userColor = "#D84A1F",
   claudeStatus,
+  initialNotifications,
+  initialUnread,
 }: {
   brands: Brand[]
   activeBrandSlug: string | null
   userInitials: string
   userColor?: string
   claudeStatus: { connected: boolean; docs: number; brandName: string | null }
+  initialNotifications: Notification[]
+  initialUnread: number
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -74,13 +80,14 @@ export function Sidebar({
 
   return (
     <aside className="w-[236px] glass-sidebar border-r border-[#E5E5EA] flex flex-col shrink-0">
-      <div className="px-4 pt-5 pb-4">
+      <div className="px-4 pt-5 pb-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group">
           <div className="w-6 h-6 rounded-md bg-[#1D1D1F] flex items-center justify-center group-hover:bg-black transition">
             <span className="text-white font-semibold text-[11px]">P</span>
           </div>
           <div className="text-[13px] font-semibold text-[#1D1D1F] tracking-display">PUNCH</div>
         </Link>
+        <NotificationBell initial={initialNotifications} initialUnread={initialUnread} />
       </div>
 
       <div className="px-2 pb-1">

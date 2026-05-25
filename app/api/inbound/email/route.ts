@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createSupabaseServiceClient } from "@/lib/supabase/server"
 import { summariseInboundEmail } from "@/lib/ai/prompts/inbound-summary"
+import { notify, recipientsForBrand } from "@/lib/notifications"
 
 /**
  * Resend Inbound webhook handler.
@@ -100,7 +101,7 @@ export async function POST(req: Request) {
   const supabase = createSupabaseServiceClient()
   const { data: brand } = await supabase
     .from("brands")
-    .select("id, name, auto_ingest_forwarded_emails")
+    .select("id, name, slug, auto_ingest_forwarded_emails")
     .eq("inbox_alias", alias)
     .maybeSingle()
   if (!brand) {
@@ -150,16 +151,40 @@ export async function POST(req: Request) {
     }
   }
 
-  await supabase.from("knowledge_items").insert({
-    brand_id: brand.id,
-    source_type: "inbound_email",
-    title,
-    content,
-    email_from: fromAddr,
-    email_subject: subject,
-    email_received_at: new Date().toISOString(),
-    review_status: "pending_review",
-  })
+  const { data: insertedRow } = await supabase
+    .from("knowledge_items")
+    .insert({
+      brand_id: brand.id,
+      source_type: "inbound_email",
+      title,
+      content,
+      email_from: fromAddr,
+      email_subject: subject,
+      email_received_at: new Date().toISOString(),
+      review_status: "pending_review",
+    })
+    .select("id")
+    .single()
+
+  // Ping the brand's strategists+: new context to review.
+  try {
+    const recipients = await recipientsForBrand({
+      brandId: brand.id as string,
+      minRole: "strategist",
+    })
+    await notify({
+      recipients,
+      kind: "inbound_email",
+      title: `New email forwarded to ${brand.name}`,
+      body: `From ${fromAddr}: ${title}`,
+      link: `/brands/${brand.slug}/knowledge?tab=emails&status=pending_review`,
+      brandId: brand.id as string,
+      entityType: "knowledge_item",
+      entityId: (insertedRow?.id as string | null) ?? null,
+    })
+  } catch (err) {
+    console.error("[inbound] notification dispatch failed:", err)
+  }
 
   return NextResponse.json({ ok: true })
 }

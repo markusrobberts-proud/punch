@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import { revalidateTag } from "next/cache"
 import { createSupabaseServiceClient } from "@/lib/supabase/server"
 import { USER_CACHE_TAG } from "@/lib/auth"
+import { notify, recipientsForAdmins } from "@/lib/notifications"
 
 type ClerkUserEvent = {
   type: "user.created" | "user.updated" | "user.deleted"
@@ -59,15 +60,28 @@ export async function POST(req: Request) {
   const id = event.data.id
 
   if (event.type === "user.created") {
+    const email = pickEmail(event.data)
+    const displayName = pickName(event.data)
     await supabase.from("users").upsert(
-      {
-        id,
-        email: pickEmail(event.data),
-        display_name: pickName(event.data),
-        role: "pending",
-      },
+      { id, email, display_name: displayName, role: "pending" },
       { onConflict: "id", ignoreDuplicates: false },
     )
+    // Tell the admins someone's waiting in the lobby.
+    try {
+      const recipients = await recipientsForAdmins(id)
+      await notify({
+        recipients,
+        kind: "user_pending",
+        title: `${displayName ?? email} is awaiting approval`,
+        body: `Sign-up just landed. Promote them to a role from Settings → Team.`,
+        link: `/settings/team`,
+        entityType: "user",
+        entityId: id,
+        actorUserId: id,
+      })
+    } catch (err) {
+      console.error("[clerk-webhook] notify failed:", err)
+    }
   } else if (event.type === "user.updated") {
     // Only sync email + display_name; never touch role from Clerk.
     await supabase

@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/rbac"
 import { USER_CACHE_TAG } from "@/lib/auth"
 import { createSupabaseServerClient, createSupabaseServiceClient } from "@/lib/supabase/server"
 import { recordAudit } from "@/lib/audit"
+import { notify } from "@/lib/notifications"
 
 // Clerk user IDs look like "user_2xY7..." rather than UUIDs.
 const RoleSchema = z.object({
@@ -38,6 +39,23 @@ export async function updateUserRole(formData: FormData) {
     action: "update_role",
     meta: { new_role: parsed.data.role },
   })
+
+  // Tell the user their role changed (skip if they just got moved to
+  // pending: they'll be bounced to /awaiting-approval and won't see the
+  // bell anyway).
+  if (parsed.data.role !== "pending") {
+    const pretty = parsed.data.role.replace(/_/g, " ")
+    await notify({
+      recipients: [parsed.data.userId],
+      kind: "role_changed",
+      title: `Your role is now ${pretty}`,
+      body: `${admin.displayName ?? admin.email} updated your access level.`,
+      link: "/settings",
+      entityType: "user",
+      entityId: parsed.data.userId,
+      actorUserId: admin.id,
+    })
+  }
 
   revalidateTag(USER_CACHE_TAG, "default")
   revalidatePath("/settings/team")

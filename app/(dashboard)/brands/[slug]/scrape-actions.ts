@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { recordAudit } from "@/lib/audit"
 import { scrapeWebsite, type ScrapedPage } from "@/lib/scrape"
 import { extractBrandProfile, formatBrandProfileMarkdown } from "@/lib/ai/prompts/brand-profile"
+import { notify } from "@/lib/notifications"
 
 export async function runWebsiteScrape(brandId: string) {
   const user = await requireRole("strategist")
@@ -105,6 +106,23 @@ export async function runWebsiteScrape(brandId: string) {
     entityId: brandId,
     action: "scrape_website",
     meta: { pages: pages.length, profile_generated: profileGenerated },
+  })
+
+  // Tell the strategist who kicked it off that the bank is ready to use.
+  // We loop back to them specifically because the scrape can take a while
+  // and they may have moved on to other work.
+  await notify({
+    recipients: [user.id],
+    kind: "scrape_complete",
+    title: `${brand.name as string}'s knowledge bank is ready`,
+    body: profileGenerated
+      ? `Scraped ${pages.length} pages and auto-extracted a brand profile.`
+      : `Scraped ${pages.length} pages.`,
+    link: `/brands/${brand.slug}/knowledge`,
+    brandId,
+    entityType: "brand",
+    entityId: brandId,
+    actorUserId: user.id,
   })
 
   revalidatePath(`/brands/${brand.slug}`)

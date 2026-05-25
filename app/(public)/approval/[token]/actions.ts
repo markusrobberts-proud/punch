@@ -5,6 +5,7 @@ import { z } from "zod"
 import { headers } from "next/headers"
 import { createSupabaseServiceClient } from "@/lib/supabase/server"
 import { hashApprovalToken } from "@/lib/approval"
+import { notify, recipientsForBrand, type NotificationKind } from "@/lib/notifications"
 
 const ActionSchema = z.object({
   token: z.string().min(1),
@@ -61,6 +62,60 @@ export async function recordApprovalAction(formData: FormData): Promise<Approval
     client_ip: h.get("x-forwarded-for") ?? null,
     client_user_agent: h.get("user-agent") ?? null,
   })
+
+  // Fire-and-forget notifications to the team behind this brand. We
+  // include enough detail (email subject, brand name) so the bell entry
+  // reads like a sentence on its own.
+  try {
+    const [{ data: brand }, { data: emailRow }, { data: plan }] = await Promise.all([
+      service.from("brands").select("name, slug").eq("id", link.brand_id).single(),
+      service.from("campaign_emails").select("subject_line, theme, plan_id").eq("id", parsed.data.emailId).single(),
+      service.from("campaign_plans").select("name").eq("id", link.plan_id).single(),
+    ])
+    const subjectLabel = (emailRow?.subject_line as string | null) ?? (emailRow?.theme as string | null) ?? "an email"
+    const planName = (plan?.name as string | null) ?? "the campaign"
+    const brandName = (brand?.name as string | null) ?? "the brand"
+    const brandSlug = (brand?.slug as string | null) ?? null
+    const link2 = brandSlug ? `/brands/${brandSlug}/calendar/${link.plan_id}` : null
+
+    const kindMap: Record<string, { kind: NotificationKind; title: string; minRole: "designer" | "strategist" }> = {
+      approve: {
+        kind: "client_approve",
+        title: `Client approved "${subjectLabel}"`,
+        minRole: "designer",
+      },
+      request_changes: {
+        kind: "client_request_changes",
+        title: `Client requested changes on "${subjectLabel}"`,
+        minRole: "designer",
+      },
+      comment: {
+        kind: "client_comment",
+        title: `Client commented on "${subjectLabel}"`,
+        // Comments are conversational; only strategist+ needs to see them.
+        minRole: "strategist",
+      },
+    }
+    const spec = kindMap[parsed.data.action]
+    if (spec) {
+      const recipients = await recipientsForBrand({
+        brandId: link.brand_id as string,
+        minRole: spec.minRole,
+      })
+      await notify({
+        recipients,
+        kind: spec.kind,
+        title: spec.title,
+        body: `${brandName} · ${planName}${parsed.data.comment ? ` · "${parsed.data.comment.slice(0, 140)}"` : ""}`,
+        link: link2,
+        brandId: link.brand_id as string,
+        entityType: "campaign_email",
+        entityId: parsed.data.emailId,
+      })
+    }
+  } catch (err) {
+    console.error("[approval-actions] notification dispatch failed:", err)
+  }
 
   revalidatePath(`/approval/${parsed.data.token}`)
   return { ok: true }

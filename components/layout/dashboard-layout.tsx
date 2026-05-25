@@ -3,6 +3,7 @@ import { ViewAsBanner } from "./view-as-banner"
 import { DeploymentBanner } from "./deployment-banner"
 import { initialsFromName } from "@/components/ui/avatar"
 import type { AppUser } from "@/lib/auth"
+import { listNotifications, unreadCount } from "@/lib/notifications"
 
 type Brand = {
   id: string
@@ -12,7 +13,7 @@ type Brand = {
   website_url: string | null
 }
 
-export function DashboardLayout({
+export async function DashboardLayout({
   user,
   brands,
   activeBrandSlug,
@@ -27,6 +28,13 @@ export function DashboardLayout({
 }) {
   const showDeployBanner = user.actualRole === "super_admin"
 
+  // Seed the notification bell with first-paint data so it doesn't flash
+  // an empty state while the client poller spins up.
+  const [initialNotifications, initialUnread] = await Promise.all([
+    listNotifications(user.id, 30),
+    unreadCount(user.id),
+  ])
+
   return (
     <div className="min-h-screen flex flex-col">
       {showDeployBanner && <DeploymentBanner />}
@@ -37,6 +45,8 @@ export function DashboardLayout({
           activeBrandSlug={activeBrandSlug}
           userInitials={initialsFromName(user.displayName ?? user.email)}
           claudeStatus={claudeStatus}
+          initialNotifications={initialNotifications}
+          initialUnread={initialUnread}
         />
         <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
           <main className="flex-1 overflow-y-auto">{children}</main>
