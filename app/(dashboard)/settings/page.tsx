@@ -2,31 +2,19 @@ import Link from "next/link"
 import { ArrowRight, Users, ListChecks, KeyRound } from "lucide-react"
 import { requireApprovedUser } from "@/lib/auth"
 import { canManageUsers, canViewAs } from "@/lib/rbac"
-import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader, PageShell } from "@/components/layout/page-header"
 import { ViewAsCard } from "./view-as-card"
-import { DigestCard } from "./digest-card"
+// Email digests are parked for now. To re-enable: uncomment the
+// DigestCard import + render below, restore the crons block in
+// vercel.json, and make sure RESEND_API_KEY + CRON_SECRET are set.
+// import { DigestCard } from "./digest-card"
 
 export default async function SettingsPage() {
   const user = await requireApprovedUser()
   const isAdmin = canManageUsers(user.actualRole)
   const isSuper = canViewAs(user.actualRole)
-
-  // Load this user's digest preference for the card below. Defaults to
-  // 'daily' from the schema; gracefully degrades if 0007 hasn't been
-  // applied yet by treating an unset/unknown value as 'daily'.
-  const supabase = await createSupabaseServerClient()
-  const { data: pref } = await supabase
-    .from("users")
-    .select("notification_digest")
-    .eq("id", user.id)
-    .maybeSingle()
-  const digestFrequency = ((pref?.notification_digest as string | null) ?? "daily") as
-    | "daily"
-    | "weekly"
-    | "off"
 
   return (
     <PageShell>
@@ -79,9 +67,7 @@ export default async function SettingsPage() {
         </Card>
       </div>
 
-      <div className="mb-6">
-        <DigestCard initial={digestFrequency} />
-      </div>
+      {/* Email digest card parked. See note at top of file. */}
 
       {isAdmin && (
         <>
