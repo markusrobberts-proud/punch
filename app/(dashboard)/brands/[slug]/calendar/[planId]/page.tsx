@@ -132,7 +132,14 @@ export default async function PlanDetailPage({
           <p className="text-[14px] md:text-[15px] text-[#6E6E73] mt-2">{plan.name}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
-          <PlanControls plan={plan} brandSlug={brand.slug} canEdit={canGenerate} canDelete={canGenerate} />
+          <PlanControls
+            plan={plan}
+            brandSlug={brand.slug}
+            canEdit={canGenerate}
+            canDelete={canGenerate}
+            brandContactEmail={(brand.contact_email as string | null) ?? null}
+            brandContactName={(brand.contact_name as string | null) ?? null}
+          />
         </div>
       </div>
 

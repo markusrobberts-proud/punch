@@ -29,9 +29,19 @@ type PlanControlsProps = {
   brandSlug: string
   canEdit: boolean
   canDelete: boolean
+  /** Pre-fills the share dialog so strategists don't retype Kate's email every month. */
+  brandContactEmail?: string | null
+  brandContactName?: string | null
 }
 
-export function PlanControls({ plan, brandSlug, canEdit, canDelete }: PlanControlsProps) {
+export function PlanControls({
+  plan,
+  brandSlug,
+  canEdit,
+  canDelete,
+  brandContactEmail,
+  brandContactName,
+}: PlanControlsProps) {
   const [pending, startTransition] = useTransition()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState("")
@@ -93,7 +103,13 @@ export function PlanControls({ plan, brandSlug, canEdit, canDelete }: PlanContro
               <Sparkles /> {plan.status === "copy_done" ? "Generate all briefs" : "Regenerate all briefs"}
             </Button>
           )}
-          {shareable && <ShareButton planId={plan.id} />}
+          {shareable && (
+            <ShareButton
+              planId={plan.id}
+              defaultRecipient={brandContactEmail ?? null}
+              defaultRecipientName={brandContactName ?? null}
+            />
+          )}
         </>
       )}
       {canDelete && (
