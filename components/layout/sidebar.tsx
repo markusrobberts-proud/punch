@@ -17,6 +17,7 @@ import {
   Check,
   Plus,
   HelpCircle,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { BrandIcon } from "@/components/ui/brand-icon"
@@ -41,6 +42,7 @@ export function Sidebar({
   claudeStatus,
   initialNotifications,
   initialUnread,
+  onCloseDrawer,
 }: {
   role: Role
   brands: Brand[]
@@ -50,6 +52,8 @@ export function Sidebar({
   claudeStatus: { connected: boolean; docs: number; brandName: string | null }
   initialNotifications: Notification[]
   initialUnread: number
+  /** Set by MobileNavShell to render a close button inline next to the bell on mobile. */
+  onCloseDrawer?: () => void
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -134,7 +138,19 @@ export function Sidebar({
           </div>
           <div className="text-[13px] font-semibold text-[#1D1D1F] tracking-display">PUNCH</div>
         </Link>
-        <NotificationBell initial={initialNotifications} initialUnread={initialUnread} />
+        <div className="flex items-center gap-1">
+          <NotificationBell initial={initialNotifications} initialUnread={initialUnread} />
+          {onCloseDrawer && (
+            <button
+              type="button"
+              aria-label="Close navigation"
+              onClick={onCloseDrawer}
+              className="md:hidden w-7 h-7 flex items-center justify-center rounded-md text-[#86868B] hover:bg-[#F5F5F7]"
+            >
+              <X className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="px-2 pb-1">

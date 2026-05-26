@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu } from "lucide-react"
 import { Sidebar } from "./sidebar"
 import type { Notification } from "@/lib/notifications"
 import type { Role } from "@/lib/roles"
@@ -116,28 +116,17 @@ export function MobileNavShell({
             open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           }`}
         >
-          <div className="relative h-full">
-            {/* Mobile-only close button so users can dismiss without tapping
-                the backdrop. */}
-            <button
-              type="button"
-              aria-label="Close navigation"
-              onClick={() => setOpen(false)}
-              className="md:hidden absolute top-3 right-3 z-10 w-7 h-7 flex items-center justify-center rounded-md text-[#86868B] hover:bg-[#F5F5F7]"
-            >
-              <X className="size-4" />
-            </button>
-            <Sidebar
-              role={role}
-              brands={brands}
-              activeBrandSlug={activeBrandSlug}
-              userInitials={userInitials}
-              userColor={userColor}
-              claudeStatus={claudeStatus}
-              initialNotifications={initialNotifications}
-              initialUnread={initialUnread}
-            />
-          </div>
+          <Sidebar
+            role={role}
+            brands={brands}
+            activeBrandSlug={activeBrandSlug}
+            userInitials={userInitials}
+            userColor={userColor}
+            claudeStatus={claudeStatus}
+            initialNotifications={initialNotifications}
+            initialUnread={initialUnread}
+            onCloseDrawer={() => setOpen(false)}
+          />
         </div>
 
         <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
