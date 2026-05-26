@@ -54,7 +54,7 @@ export function AddNoteDialog({ brands }: { brands: { id: string; name: string }
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Brand</Label>
               <Select value={brandId} onValueChange={setBrandId}>

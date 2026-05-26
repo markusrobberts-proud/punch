@@ -92,15 +92,15 @@ export default async function BrandDashboard({ params }: { params: Promise<{ slu
         }
       />
 
-      <div className="grid grid-cols-4 gap-3 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 md:mb-10">
         <Stat label="In planning" value={counts.plan} />
         <Stat label="Awaiting copy review" value={counts.copy} />
         <Stat label="Awaiting brief review" value={counts.brief} />
         <Stat label="Ready to send" value={counts.approved} tone="#166D2F" />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
           <SectionTitle right={<Link href={`/brands/${brand.slug}/calendar`} className="text-[12px] text-[#007AFF] hover:underline inline-flex items-center gap-1">View calendar <ArrowRight className="size-3" /></Link>}>
             Up next
           </SectionTitle>
@@ -156,7 +156,7 @@ export default async function BrandDashboard({ params }: { params: Promise<{ slu
 
       <div className="mt-10">
         <SectionTitle>Voice & audience</SectionTitle>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card>
             <CardHeader>
               <div className="text-[11px] uppercase tracking-wider text-[#86868B]">Tone of voice</div>

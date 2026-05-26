@@ -84,7 +84,7 @@ export function NewPlanForm({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label htmlFor="month">Month</Label>
           <select
@@ -117,7 +117,7 @@ export function NewPlanForm({
         <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2">
           Cadence
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="emailsPerWeek">Emails per week</Label>
             <Input
@@ -156,7 +156,7 @@ export function NewPlanForm({
         <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2">
           Format mix (per month)
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="targetDesigned">Designed</Label>
             <Input id="targetDesigned" name="targetDesigned" type="number" min={0} max={50} placeholder="4" />

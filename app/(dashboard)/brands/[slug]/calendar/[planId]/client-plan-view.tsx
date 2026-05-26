@@ -39,12 +39,12 @@ export function ClientPlanView({
         <ArrowLeft className="size-3.5" /> Campaigns
       </Link>
 
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <div className="text-[11px] uppercase tracking-wider text-[#86868B] mb-1">{brand.name}</div>
-        <h1 className="text-[34px] font-semibold tracking-display leading-tight">
+        <h1 className="text-[26px] sm:text-[30px] md:text-[34px] font-semibold tracking-display leading-tight">
           {MONTHS[plan.month - 1]} {plan.year}
         </h1>
-        <p className="text-[15px] text-[#6E6E73] mt-2">{plan.name}</p>
+        <p className="text-[14px] md:text-[15px] text-[#6E6E73] mt-2">{plan.name}</p>
       </div>
 
       {!reviewable ? (
@@ -106,7 +106,7 @@ function ClientReviewSummary({
 
   return (
     <Card>
-      <CardContent className="py-4 flex items-center justify-between gap-4 text-[13px]">
+      <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 text-[13px]">
         <div>
           <div className="font-medium">
             {remaining === 0

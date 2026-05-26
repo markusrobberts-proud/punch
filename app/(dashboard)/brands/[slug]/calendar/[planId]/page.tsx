@@ -123,27 +123,29 @@ export default async function PlanDetailPage({
         <ArrowLeft className="size-3.5" /> Calendar
       </Link>
 
-      <div className="flex items-start justify-between gap-6 mb-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6 mb-6 md:mb-8">
         <div className="min-w-0">
           <div className="text-[11px] uppercase tracking-wider text-[#86868B] mb-1">{brand.name}</div>
-          <h1 className="text-[34px] font-semibold tracking-display leading-tight">
+          <h1 className="text-[26px] sm:text-[30px] md:text-[34px] font-semibold tracking-display leading-tight">
             {MONTHS[plan.month - 1]} {plan.year}
           </h1>
-          <p className="text-[15px] text-[#6E6E73] mt-2">{plan.name}</p>
+          <p className="text-[14px] md:text-[15px] text-[#6E6E73] mt-2">{plan.name}</p>
         </div>
-        <PlanControls plan={plan} brandSlug={brand.slug} canEdit={canGenerate} canDelete={canGenerate} />
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap sm:shrink-0">
+          <PlanControls plan={plan} brandSlug={brand.slug} canEdit={canGenerate} canDelete={canGenerate} />
+        </div>
       </div>
 
       {linkIds.length > 0 && (
         <Card className="mb-6">
-          <CardContent className="py-4 flex items-center justify-between gap-4 text-[13px]">
+          <CardContent className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 text-[13px]">
             <div>
               <div className="font-medium">Client review in progress</div>
               <div className="text-[11.5px] text-[#86868B] mt-0.5">
                 Shared {sharedAt && new Date(sharedAt).toLocaleDateString()} · {totalActions} client {totalActions === 1 ? "action" : "actions"} so far
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {approveCount > 0 && <Badge variant="success">{approveCount} approved</Badge>}
               {changesCount > 0 && <Badge variant="warning">{changesCount} changes requested</Badge>}
             </div>

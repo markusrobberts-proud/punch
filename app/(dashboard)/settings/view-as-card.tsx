@@ -47,7 +47,7 @@ export function ViewAsCard({ currentViewAs }: { currentViewAs: Role | null }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {ROLE_OPTIONS.map((opt) => {
             const active = currentViewAs === opt.value
             return (

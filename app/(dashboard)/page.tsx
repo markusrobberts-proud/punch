@@ -56,12 +56,12 @@ export default async function HomePage() {
 
   return (
     <PageShell>
-      <div className="mb-8">
+      <div className="mb-6 md:mb-8">
         <div className="text-[11px] uppercase tracking-wider text-[#86868B] mb-1">{greeting}</div>
-        <h1 className="text-[34px] font-semibold tracking-display leading-tight">
+        <h1 className="text-[26px] sm:text-[30px] md:text-[34px] font-semibold tracking-display leading-tight">
           {roleTitle(user.role)}
         </h1>
-        <p className="text-[15px] text-[#6E6E73] mt-2 max-w-xl leading-relaxed">{roleSubtitle(user.role)}</p>
+        <p className="text-[14px] md:text-[15px] text-[#6E6E73] mt-2 max-w-xl leading-relaxed">{roleSubtitle(user.role)}</p>
       </div>
 
       {roleDashboard({ user, data, brands, brandMap, userMap, aiKeyConfigured })}
@@ -148,15 +148,15 @@ function AdminDashboard({
 }) {
   return (
     <>
-      <div className="grid grid-cols-4 gap-3 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 md:mb-10">
         <Stat label="Brands" value={brands.length} />
         <Stat label="Plans in flight" value={data.counts.activePlans} />
         <Stat label="Pending review" value={data.counts.pendingKnowledge} tone={data.counts.pendingKnowledge > 0 ? "#8B5A00" : undefined} />
         <Stat label="Team" value={data.counts.teamSize} sub={data.counts.pendingTeam > 0 ? `${data.counts.pendingTeam} pending` : undefined} />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <Section title="Activity" right={<Link href="/settings/audit" className="text-[12px] text-[#007AFF] hover:underline">Full log →</Link>}>
             {data.recentAudit.length === 0 ? (
               <EmptyCard message="No activity yet. Create a brand or generate a calendar." />
@@ -240,15 +240,15 @@ function StrategistDashboard({
 }) {
   return (
     <>
-      <div className="grid grid-cols-4 gap-3 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 md:mb-10">
         <Stat label="Plans in flight" value={data.counts.activePlans} />
         <Stat label="Pending review" value={data.counts.pendingKnowledge} tone={data.counts.pendingKnowledge > 0 ? "#8B5A00" : undefined} />
         <Stat label="Completed this month" value={data.counts.completeThisMonth} tone="#166D2F" />
         <Stat label="Recent client notes" value={data.recentClientFeedback.length} />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <Section title="Plans to drive" right={<Link href="/brands" className="text-[12px] text-[#007AFF] hover:underline">All brands →</Link>}>
             <PlansList plans={data.activePlans.slice(0, 6)} brandMap={brandMap} />
           </Section>
@@ -343,15 +343,15 @@ function DesignerDashboard({
 }) {
   return (
     <>
-      <div className="grid grid-cols-4 gap-3 mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 md:mb-10">
         <Stat label="Briefs ready for design" value={data.counts.designQueue} tone={data.counts.designQueue > 0 ? "#8B5A00" : undefined} />
         <Stat label="Active plans" value={data.counts.activePlans} />
         <Stat label="Completed this month" value={data.counts.completeThisMonth} tone="#166D2F" />
         <Stat label="Brands" value={brandMap.size} />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <Section title="Briefs ready for design" right={<Link href="/brands" className="text-[12px] text-[#007AFF] hover:underline">Browse calendars →</Link>}>
             {data.designQueue.length === 0 ? (
               <EmptyCard message="No briefs waiting on design. You're clear." />
@@ -453,14 +453,14 @@ function ClientDashboard({
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-3 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8 md:mb-10">
         <Stat label="Your brands" value={brands.length} />
         <Stat label="Waiting on you" value={readyToReview.length} tone={readyToReview.length > 0 ? "#0A4B91" : undefined} />
         <Stat label="In progress" value={Math.max(0, myPlans.length - readyToReview.length)} />
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <Section
             title="Ready for your review"
             right={

@@ -88,7 +88,7 @@ export default async function StrategyPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-[200px_1fr] gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 md:gap-10">
         <aside>
           <div className="text-[11px] font-semibold text-[#86868B] uppercase tracking-wider mb-2 px-2">Sections</div>
           <div className="space-y-0.5">

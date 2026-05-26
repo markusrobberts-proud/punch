@@ -289,7 +289,7 @@ function CopyEditor({
       <EditField label="Preview" name="preview_text" defaultValue={email.preview_text ?? ""} />
       <EditField label="Headline" name="body_headline" defaultValue={email.body_headline ?? ""} />
       <EditField label="Body" name="body_copy" defaultValue={email.body_copy ?? ""} multiline rows={10} />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <EditField label="CTA text" name="cta_text" defaultValue={email.cta_text ?? ""} />
         <EditField label="CTA URL" name="cta_url" defaultValue={email.cta_url ?? ""} />
       </div>

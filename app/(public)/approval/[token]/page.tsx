@@ -109,13 +109,13 @@ export default async function ClientApprovalPage({
   if (!view) notFound()
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10 print:py-0 print:px-0 print:max-w-none">
-      <header className="mb-8 print:mb-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10 print:py-0 print:px-0 print:max-w-none">
+      <header className="mb-6 md:mb-8 print:mb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-semibold text-white"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-semibold text-white shrink-0"
                 style={{ background: view.brand.primary_color || "#1D1D1F" }}
               >
                 {view.brand.name
@@ -125,14 +125,16 @@ export default async function ClientApprovalPage({
                   .join("")
                   .toUpperCase()}
               </div>
-              <div className="text-[12px] text-[#6E6E73]">For approval · {view.brand.name}</div>
+              <div className="text-[12px] text-[#6E6E73] truncate">For approval · {view.brand.name}</div>
             </div>
-            <h1 className="text-[30px] font-semibold tracking-display leading-tight">
+            <h1 className="text-[24px] sm:text-[28px] md:text-[30px] font-semibold tracking-display leading-tight">
               {MONTHS[view.plan.month - 1]} {view.plan.year}
             </h1>
             <p className="text-[14px] text-[#6E6E73] mt-1">{view.plan.name}</p>
           </div>
-          <PrintButton />
+          <div className="sm:shrink-0">
+            <PrintButton />
+          </div>
         </div>
         {view.expiresAt && (
           <p className="text-[11px] text-[#86868B] mt-3">

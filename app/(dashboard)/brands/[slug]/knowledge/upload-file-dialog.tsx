@@ -69,7 +69,7 @@ export function UploadFileDialog({ brandId, brandSlug }: { brandId: string; bran
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="title">Title</Label>
               <Input id="title" name="title" required placeholder="e.g. Brand guidelines v3" />
